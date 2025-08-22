@@ -13,7 +13,7 @@ namespace EcPhp\LaravelCas\Controllers;
 
 use Illuminate\Http\Response;
 
-final class HomepageController extends Controller
+class HomepageController extends Controller
 {
     public function __invoke(): Response
     {

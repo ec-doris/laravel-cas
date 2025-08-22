@@ -22,7 +22,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 use const FILTER_VALIDATE_URL;
 
-final class Laravel implements PropertiesInterface, ArrayAccess
+class Laravel implements PropertiesInterface, ArrayAccess
 {
     private PropertiesInterface $cas;
 

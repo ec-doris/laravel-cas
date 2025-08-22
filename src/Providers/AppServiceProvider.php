@@ -36,7 +36,7 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 
 use function dirname;
 
-final class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
     public function boot()
     {

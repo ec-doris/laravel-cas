@@ -18,7 +18,7 @@ use EcPhp\LaravelCas\Tests\TestCase;
  *
  * @coversNothing
  */
-final class LogoutControllerTest extends TestCase
+class LogoutControllerTest extends TestCase
 {
     private $response;
 

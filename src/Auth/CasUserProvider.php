@@ -18,7 +18,7 @@ use Illuminate\Contracts\Session\Session;
 
 use function array_key_exists;
 
-final class CasUserProvider implements UserProvider
+class CasUserProvider implements UserProvider
 {
     private string $guard_name = 'laravel-cas';
 

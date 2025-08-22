@@ -18,7 +18,7 @@ use EcPhp\LaravelCas\Tests\TestCase;
  *
  * @coversNothing
  */
-final class HomePageControllerTest extends TestCase
+class HomePageControllerTest extends TestCase
 {
     public function testHomePageController()
     {

@@ -17,7 +17,7 @@ use Illuminate\Http\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-final class ProxyCallbackController extends Controller
+class ProxyCallbackController extends Controller
 {
     public function __invoke(
         Request $request,

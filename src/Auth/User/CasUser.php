@@ -13,7 +13,7 @@ namespace EcPhp\LaravelCas\Auth\User;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 
-final class CasUser implements Authenticatable
+class CasUser implements Authenticatable
 {
     /**
      * The user storage.

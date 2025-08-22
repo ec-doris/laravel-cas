@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
 
 use function sprintf;
 
-final class CasGuard implements AuthGuard
+class CasGuard implements AuthGuard
 {
     private bool $loggedOut = false;
 

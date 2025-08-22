@@ -18,7 +18,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Orchestra\Workbench\WorkbenchServiceProvider as ServiceProvider;
 use Psr\Http\Client\ClientInterface;
 
-final class LaravelCasProvider extends ServiceProvider
+class LaravelCasProvider extends ServiceProvider
 {
     /**
      * Bootstrap any application services.

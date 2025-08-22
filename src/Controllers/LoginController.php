@@ -18,7 +18,7 @@ use Illuminate\Routing\Redirector;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-final class LoginController extends Controller
+class LoginController extends Controller
 {
     public function __invoke(
         Request $request,

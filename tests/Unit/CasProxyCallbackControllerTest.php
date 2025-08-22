@@ -18,7 +18,7 @@ use EcPhp\LaravelCas\Tests\TestCase;
  *
  * @coversNothing
  */
-final class CasProxyCallbackControllerTest extends TestCase
+class CasProxyCallbackControllerTest extends TestCase
 {
     private $response;
 
