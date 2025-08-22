@@ -5,7 +5,7 @@ A CAS bundle for Laravel.
 ## Installation
 
 ```shell
-    composer require ecphp/laravel-cas
+    composer require brownrl/laravel-cas
 ```
 
 `config/app.php`

@@ -1,5 +1,5 @@
 {
-    "name": "ecphp/laravel-cas",
+    "name": "brownrl/laravel-cas",
     "description": "A bundle for Laravel, providing authentication against a Central Authentication Service (CAS) server.",
     "license": "BSD-3-Clause",
     "keywords": [
@@ -9,7 +9,7 @@
         "single sign-on",
         "sso"
     ],
-    "homepage": "https://github.com/ecphp/",
+    "homepage": "https://github.com/brownrl/laravel-cas",
     "require": {
         "php": ">= 8.1",
         "ext-dom": "*",
