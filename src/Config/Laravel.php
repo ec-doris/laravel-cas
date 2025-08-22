@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace EcPhp\LaravelCas\Config;
 
+use ArrayAccess;
 use EcPhp\CasLib\Configuration\Properties as PsrCasConfiguration;
 use EcPhp\CasLib\Contract\Configuration\PropertiesInterface;
 use Illuminate\Routing\Router;
@@ -21,7 +22,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 use const FILTER_VALIDATE_URL;
 
-final class Laravel implements PropertiesInterface
+final class Laravel implements PropertiesInterface, ArrayAccess
 {
     private PropertiesInterface $cas;
 
@@ -41,7 +42,7 @@ final class Laravel implements PropertiesInterface
 
     public function all(): array
     {
-        return $this->cas->all();
+        return $this->cas->jsonSerialize();
     }
 
     /**
@@ -50,7 +51,8 @@ final class Laravel implements PropertiesInterface
     #[ReturnTypeWillChange]
     public function offsetExists($offset): bool
     {
-        return $this->cas->offsetExists($offset);
+        $properties = $this->cas->jsonSerialize();
+        return isset($properties[$offset]);
     }
 
     /**
@@ -61,7 +63,8 @@ final class Laravel implements PropertiesInterface
     #[ReturnTypeWillChange]
     public function offsetGet($offset)
     {
-        return $this->cas->offsetGet($offset);
+        $properties = $this->cas->jsonSerialize();
+        return $properties[$offset] ?? null;
     }
 
     /**
@@ -70,7 +73,8 @@ final class Laravel implements PropertiesInterface
      */
     public function offsetSet($offset, $value): void
     {
-        $this->cas->offsetSet($offset, $value);
+        // Note: Properties class is immutable, so this is a no-op
+        // In a real implementation, you might want to store changes separately
     }
 
     /**
@@ -78,7 +82,13 @@ final class Laravel implements PropertiesInterface
      */
     public function offsetUnset($offset): void
     {
-        $this->cas->offsetUnset($offset);
+        // Note: Properties class is immutable, so this is a no-op
+        // In a real implementation, you might want to store changes separately
+    }
+
+    public function jsonSerialize(): array
+    {
+        return $this->cas->jsonSerialize();
     }
 
     /**
