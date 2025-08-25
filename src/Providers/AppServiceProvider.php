@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace EcPhp\LaravelCas\Providers;
+namespace EcDoris\LaravelCas\Providers;
 
 use EcPhp\CasLib\Cas;
 use EcPhp\CasLib\Contract\CasInterface;
@@ -24,9 +24,9 @@ use EcPhp\CasLib\Response\Factory\AuthenticationFailureFactory;
 use EcPhp\CasLib\Response\Factory\ProxyFactory;
 use EcPhp\CasLib\Response\Factory\ProxyFailureFactory;
 use EcPhp\CasLib\Response\Factory\ServiceValidateFactory;
-use EcPhp\LaravelCas\Auth\CasGuard;
-use EcPhp\LaravelCas\Auth\CasUserProvider;
-use EcPhp\LaravelCas\Config\Laravel;
+use EcDoris\LaravelCas\Auth\CasGuard;
+use EcDoris\LaravelCas\Auth\CasUserProvider;
+use EcDoris\LaravelCas\Config\Laravel;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Foundation\Application;
@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
             'laravel-cas'
         );
         $this->app->router->group(
-            ['namespace' => 'EcPhp\LaravelCas\Controllers'],
+            ['namespace' => 'EcDoris\LaravelCas\Controllers'],
             static fn () => require dirname(__DIR__) . '/Config/routes.php'
         );
         Auth::provider(

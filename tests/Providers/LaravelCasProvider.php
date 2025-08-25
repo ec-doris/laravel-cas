@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace EcPhp\LaravelCas\Tests\Providers;
+namespace EcDoris\LaravelCas\Tests\Providers;
 
 use GuzzleHttp\Client;
 use loophp\psr17\Psr17;

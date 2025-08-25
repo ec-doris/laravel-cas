@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace EcPhp\LaravelCas\Auth\User;
+namespace EcDoris\LaravelCas\Auth\User;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 

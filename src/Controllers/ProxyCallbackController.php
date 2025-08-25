@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace EcPhp\LaravelCas\Controllers;
+namespace EcDoris\LaravelCas\Controllers;
 
 use EcPhp\CasLib\Contract\CasInterface;
 use Illuminate\Http\Request;

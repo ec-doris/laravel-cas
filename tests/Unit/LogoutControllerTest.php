@@ -9,9 +9,9 @@
 
 declare(strict_types=1);
 
-namespace EcPhp\LaravelCas\Tests\Unit;
+namespace EcDoris\LaravelCas\Tests\Unit;
 
-use EcPhp\LaravelCas\Tests\TestCase;
+use EcDoris\LaravelCas\Tests\TestCase;
 
 /**
  * @internal

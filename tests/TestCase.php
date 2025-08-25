@@ -9,10 +9,10 @@
 
 declare(strict_types=1);
 
-namespace EcPhp\LaravelCas\Tests;
+namespace EcDoris\LaravelCas\Tests;
 
-use EcPhp\LaravelCas\Providers\AppServiceProvider;
-use EcPhp\LaravelCas\Tests\Providers\LaravelCasProvider;
+use EcDoris\LaravelCas\Providers\AppServiceProvider;
+use EcDoris\LaravelCas\Tests\Providers\LaravelCasProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
 use function dirname;

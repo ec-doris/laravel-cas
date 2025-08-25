@@ -9,9 +9,9 @@
 
 declare(strict_types=1);
 
-namespace EcPhp\LaravelCas\Auth;
+namespace EcDoris\LaravelCas\Auth;
 
-use EcPhp\LaravelCas\Auth\User\CasUser;
+use EcDoris\LaravelCas\Auth\User\CasUser;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Session\Session;

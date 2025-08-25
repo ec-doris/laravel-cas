@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace EcPhp\LaravelCas\Middleware;
+namespace EcDoris\LaravelCas\Middleware;
 
 use Closure;
 use EcPhp\CasLib\Contract\CasInterface;

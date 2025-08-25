@@ -30,8 +30,8 @@
     },
     "autoload": {
         "psr-4": {
-            "EcPhp\\LaravelCas\\": "src/",
-            "EcPhp\\LaravelCas\\Tests\\": "tests/"
+            "EcDoris\\LaravelCas\\": "src/",
+            "EcDoris\\LaravelCas\\Tests\\": "tests/"
         }
     },
     "config": {
@@ -40,13 +40,11 @@
     "extra": {
         "laravel": {
             "providers": [
-                "EcPhp\\LaravelCas\\Providers\\AppServiceProvider"
+                "EcDoris\\LaravelCas\\Providers\\AppServiceProvider"
             ]
         }
     },
     "scripts": {
-        "changelog-unreleased": "auto-changelog -c .auto-changelog -u",
-        "changelog-version": "auto-changelog -c .auto-changelog -v",
         "phpunit": "vendor/bin/phpunit"
     }
 }

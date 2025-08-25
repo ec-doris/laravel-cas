@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace EcPhp\LaravelCas\Config;
+namespace EcDoris\LaravelCas\Config;
 
 use ArrayAccess;
 use EcPhp\CasLib\Configuration\Properties as PsrCasConfiguration;

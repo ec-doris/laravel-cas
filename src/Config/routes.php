@@ -9,10 +9,10 @@
 
 declare(strict_types=1);
 
-use EcPhp\LaravelCas\Controllers\HomepageController as Homepage;
-use EcPhp\LaravelCas\Controllers\LoginController as Login;
-use EcPhp\LaravelCas\Controllers\LogoutController as Logout;
-use EcPhp\LaravelCas\Controllers\ProxyCallbackController as ProxyCallback;
+use EcDoris\LaravelCas\Controllers\HomepageController as Homepage;
+use EcDoris\LaravelCas\Controllers\LoginController as Login;
+use EcDoris\LaravelCas\Controllers\LogoutController as Logout;
+use EcDoris\LaravelCas\Controllers\ProxyCallbackController as ProxyCallback;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['web']], static function () {

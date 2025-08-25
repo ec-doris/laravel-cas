@@ -5,14 +5,14 @@ A CAS bundle for Laravel.
 ## Installation
 
 ```shell
-    composer require brownrl/laravel-cas
+    composer require ec-doris/laravel-cas
 ```
 
 `config/app.php`
 
 ```php
     'providers' => [
-        EcPhp\LaravelCas\Providers\AppServiceProvider::class,
+        EcDoris\LaravelCas\Providers\AppServiceProvider::class,
     ],
 ```
 
@@ -38,7 +38,7 @@ A CAS bundle for Laravel.
 ```php
     protected $middlewareGroups = [
         'web' => [
-            \EcPhp\LaravelCas\Middleware\CasAuthenticator::class
+            \EcDoris\LaravelCas\Middleware\CasAuthenticator::class
         ],
         ...
     ];
