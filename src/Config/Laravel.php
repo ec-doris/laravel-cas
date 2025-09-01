@@ -18,7 +18,6 @@ use Illuminate\Routing\Router;
 use Illuminate\Routing\Router as RouterInterface;
 use ReturnTypeWillChange;
 use Symfony\Component\HttpFoundation\ParameterBag;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 use const FILTER_VALIDATE_URL;
 
@@ -128,13 +127,13 @@ class Laravel implements PropertiesInterface, ArrayAccess
             $route = $protocol['default_parameters'][$key];
 
             if (false === filter_var($route, FILTER_VALIDATE_URL)) {
-                $route = $this
-                    ->router
-                    ->generate(
-                        $route,
-                        [],
-                        UrlGeneratorInterface::ABSOLUTE_URL
-                    );
+                try {
+                    // Try to generate route URL using Laravel's routing system
+                    $route = route($route, [], true);
+                } catch (\Exception $e) {
+                    // If route doesn't exist, keep the original value
+                    // This maintains backward compatibility
+                }
 
                 $properties['protocol'][$protocolKey]['default_parameters'][$key] = $route;
             }
