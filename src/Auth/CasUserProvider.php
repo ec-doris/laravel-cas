@@ -61,7 +61,9 @@ class CasUserProvider implements UserProvider
 
     public function retrieveCasUser(): ?Authenticatable
     {
-        return $this->session->get(auth()->guard($this->guard_name)->getName());
+        // Replicate CasGuard::getName() logic to avoid circular dependency
+        $sessionKey = sprintf('login_%s_%s', $this->guard_name, sha1(\EcDoris\LaravelCas\Auth\CasGuard::class));
+        return $this->session->get($sessionKey);
     }
 
     public function updateRememberToken(Authenticatable $user, $token) {}
