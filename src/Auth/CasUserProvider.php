@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace EcDoris\LaravelCas\Auth;
 
-use EcDoris\LaravelCas\Auth\User\CasUser;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Session\Session;
@@ -37,28 +36,33 @@ class CasUserProvider implements UserProvider
 
     public function retrieveByCredentials(array $credentials): ?Authenticatable
     {
-        if ([] === $credentials) {
+
+        if ($credentials === []) {
             return null;
         }
 
-        if (false === array_key_exists('user', $credentials)) {
+        if (array_key_exists('user', $credentials) === false) {
             return null;
         }
 
         // Extract email/user info from CAS credentials
-        $email = $credentials['user'] ?? $credentials['email'] ?? null;
-        
-        if (!$email) {
+        $email = $credentials['attributes']['email'] ?? null;
+
+        if (! $email) {
             return null;
         }
 
+        
         $password = 'xxx-xxx-xxx-xxx';
-        $name = $credentials['name']
-        $email = $credentials['email']
+        $name = ($credentials['attributes']['firstName'].' '.$credentials['attributes']['lastName']) ?? '';
+        $name = ucwords(strtolower($name));
+        $organisation = $credentials['attributes']['departmentNumber'] ?? null;
+
         $laravelUser = \App\Models\User::where('email', $email)->first();
 
         if ($laravelUser) {
             $this->model = $laravelUser;
+
             return $this->model;
         }
 
@@ -66,10 +70,11 @@ class CasUserProvider implements UserProvider
             'email' => $email,
             'name' => $name,
             'password' => $password,
+            'organisation' => $organisation,
         ];
 
         $laravelUser = \App\Models\User::create($attributes);
-        $this->model($laravelUser);
+        $this->model = $laravelUser;
 
         return $this->model;
     }
@@ -88,6 +93,7 @@ class CasUserProvider implements UserProvider
     {
         // Replicate CasGuard::getName() logic to avoid circular dependency
         $sessionKey = sprintf('login_%s_%s', $this->guard_name, sha1(\EcDoris\LaravelCas\Auth\CasGuard::class));
+
         return $this->session->get($sessionKey);
     }
 
