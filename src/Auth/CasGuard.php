@@ -16,7 +16,6 @@ use Illuminate\Contracts\Auth\Guard as AuthGuard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 use function sprintf;
 
@@ -44,16 +43,23 @@ class CasGuard implements AuthGuard
             throw new \Exception('Masquerade cannot be used in a production environment.');
         }
 
-        
+        $password = 'xxx-xxx-xxx-xxx';
+        $name = 'Cas Masquerade';
+        $email = config('cas.cas_masquerade');
+        $laravelUser = \App\Models\User::where('email', $email)->first();
+
+        if ($laravelUser) {
+            $this->setUser($laravelUser);
+            return $laravelUser;
+        }
 
         $attributes = [
-            'email' => config('cas.cas_masquerade'),
-            'name' => 'Cas Masquerade',
-            'password' => 'xxx-xxx-xxx-xxx'
+            'email' => $email,
+            'name' => $name,
+            'password' => $password,
         ];
 
-        $laravelUser = \App\Models\User::firstOrCreate($attributes);
-
+        $laravelUser = \App\Models\User::create($attributes);
         $this->setUser($laravelUser);
 
         return $laravelUser;
@@ -63,7 +69,7 @@ class CasGuard implements AuthGuard
     {
         $user = $this->provider->retrieveByCredentials($credentials);
 
-        if (null === $user) {
+        if ($user === null) {
             return null;
         }
 
@@ -74,7 +80,7 @@ class CasGuard implements AuthGuard
 
     public function check()
     {
-        return null !== $this->user();
+        return $this->user() !== null;
     }
 
     public function getJsonParams()
@@ -89,12 +95,12 @@ class CasGuard implements AuthGuard
 
     public function guest()
     {
-        return !$this->check();
+        return ! $this->check();
     }
 
     public function hasUser()
     {
-        return (null !== $this->user()) ? true : false;
+        return ($this->user() !== null) ? true : false;
     }
 
     public function id()
@@ -133,7 +139,7 @@ class CasGuard implements AuthGuard
 
     public function validate(array $credentials = [])
     {
-        if ([] === $credentials) {
+        if ($credentials === []) {
             return false;
         }
 
