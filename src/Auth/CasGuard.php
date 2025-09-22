@@ -52,10 +52,6 @@ class CasGuard implements AuthGuard
             'password' => $password
         ];
 
-        if (config('laravel-cas.default_user_role')) {
-            $attributes['role'] = config('laravel-cas.default_user_role');
-        }
-
         $laravelUser = \App\Models\User::firstOrCreate($attributes);
 
         $this->setUser($laravelUser);
