@@ -11,11 +11,13 @@ declare(strict_types=1);
 
 namespace EcDoris\LaravelCas\Auth;
 
+use EcDoris\LaravelCas\Auth\User\CasUser;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard as AuthGuard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
+
 
 use function sprintf;
 
@@ -45,12 +47,12 @@ class CasGuard implements AuthGuard
         $attributes = [
             'email' => config('cas.cas_masquerade'),
         ];
-        $user = User::firstOrCreateByAttributes($attributes);
+        $user = CasUser::firstOrCreateByAttributes($attributes);
         $this->setUser($user);
 
         return $user;
     }
-    
+
     public function attempt(array $credentials): ?Authenticatable
     {
         $user = $this->provider->retrieveByCredentials($credentials);
