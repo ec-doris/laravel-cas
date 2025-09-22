@@ -12,6 +12,7 @@ declare(strict_types=1);
 return [
     'base_url' => env('CAS_URL', 'https://webgate.ec.europa.eu/cas'),
     'redirect_login_route' => env('CAS_REDIRECT_LOGIN_ROUTE', 'laravel-cas-homepage'),
+    'default_user_role' => env('CAS_DEFAULT_USER_ROLE', null),
     'protocol' => [
         'login' => [
             'path' => '/login',

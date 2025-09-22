@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace EcDoris\LaravelCas\Auth;
 
-use EcDoris\LaravelCas\Auth\User\CasUser;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard as AuthGuard;
 use Illuminate\Contracts\Auth\UserProvider;
@@ -45,12 +44,18 @@ class CasGuard implements AuthGuard
             throw new \Exception('Masquerade cannot be used in a production environment.');
         }
         $attributes = [
-            'email' => config('cas.cas_masquerade'),
+            'email' => config('cas.cas_masquerade')
         ];
-        $user = CasUser::firstOrCreateByAttributes($attributes);
-        $this->setUser($user);
 
-        return $user;
+        if (config('laravel-cas.default_user_role')) {
+            $attributes['role'] = config('laravel-cas.default_user_role');
+        }
+
+        $laravelUser = \App\Models\User::firstOrCreate($attributes);
+
+        $this->setUser($laravelUser);
+
+        return $laravelUser;
     }
 
     public function attempt(array $credentials): ?Authenticatable
