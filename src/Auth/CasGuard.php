@@ -73,11 +73,11 @@ class CasGuard implements AuthGuard
 
     public function id()
     {
-        if ($this->loggedOut) {
+        if ($this->loggedOut || ! $this->hasUser()) {
             return null;
         }
 
-        return $this->user->user;
+        return $this->user->user ?? null;
     }
 
     public function logout()
