@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
         );
         Auth::extend(
             'laravel-cas',
-            static fn (Application $app, string $name, array $config): Guard => new CasGuard(Auth::createUserProvider($config['provider']), $app->make('request'), app('session.store'))
+            static fn (Application $app, string $name, array $config): Guard => new CasGuard(new CasUserProvider(app('session.store')), $app->make('request'), app('session.store'))
         );
     }
 
