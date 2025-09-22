@@ -52,7 +52,7 @@ class CasGuard implements AuthGuard
         $attributes = [
             'email' => config('cas.cas_masquerade'),
             'name' => 'John Masquerade',
-            'password' = $password
+            'password' => $password
         ];
 
         if (config('laravel-cas.default_user_role')) {
