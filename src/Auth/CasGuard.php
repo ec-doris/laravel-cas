@@ -16,7 +16,7 @@ use Illuminate\Contracts\Auth\Guard as AuthGuard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Hash;
 
 use function sprintf;
 
@@ -43,9 +43,16 @@ class CasGuard implements AuthGuard
         if (strtolower((string) config('app.env')) === 'production' && config('cas.cas_masquerade')) {
             throw new \Exception('Masquerade cannot be used in a production environment.');
         }
+
+        $length = 8;
+        $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-=+;:,.?";
+        $password = substr( str_shuffle( $chars ), 0, $length );
+        $password = Hash::make($password);
+
         $attributes = [
             'email' => config('cas.cas_masquerade'),
-            'name' => 'John Masquerade'
+            'name' => 'John Masquerade',
+            'password' = $password
         ];
 
         if (config('laravel-cas.default_user_role')) {
