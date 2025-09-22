@@ -44,7 +44,32 @@ class CasUserProvider implements UserProvider
         if (false === array_key_exists('user', $credentials)) {
             return null;
         }
-        $this->model = new CasUser($credentials);
+
+        // Extract email/user info from CAS credentials
+        $email = $credentials['user'] ?? $credentials['email'] ?? null;
+        
+        if (!$email) {
+            return null;
+        }
+
+        $password = 'xxx-xxx-xxx-xxx';
+        $name = $credentials['name']
+        $email = $credentials['email']
+        $laravelUser = \App\Models\User::where('email', $email)->first();
+
+        if ($laravelUser) {
+            $this->model = $laravelUser;
+            return $this->model;
+        }
+
+        $attributes = [
+            'email' => $email,
+            'name' => $name,
+            'password' => $password,
+        ];
+
+        $laravelUser = \App\Models\User::create($attributes);
+        $this->model($laravelUser);
 
         return $this->model;
     }
