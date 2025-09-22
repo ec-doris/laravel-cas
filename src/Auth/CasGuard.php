@@ -44,12 +44,12 @@ class CasGuard implements AuthGuard
             throw new \Exception('Masquerade cannot be used in a production environment.');
         }
 
-        $password = Hash::make('cas_password_never_to_be_used');
+        
 
         $attributes = [
             'email' => config('cas.cas_masquerade'),
             'name' => 'Cas Masquerade',
-            'password' => $password
+            'password' => 'xxx-xxx-xxx-xxx'
         ];
 
         $laravelUser = \App\Models\User::firstOrCreate($attributes);
