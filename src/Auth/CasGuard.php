@@ -44,7 +44,8 @@ class CasGuard implements AuthGuard
             throw new \Exception('Masquerade cannot be used in a production environment.');
         }
         $attributes = [
-            'email' => config('cas.cas_masquerade')
+            'email' => config('cas.cas_masquerade'),
+            'name' => 'John Masquerade'
         ];
 
         if (config('laravel-cas.default_user_role')) {
