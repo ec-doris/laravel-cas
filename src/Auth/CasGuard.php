@@ -44,14 +44,11 @@ class CasGuard implements AuthGuard
             throw new \Exception('Masquerade cannot be used in a production environment.');
         }
 
-        $length = 8;
-        $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-=+;:,.?";
-        $password = substr( str_shuffle( $chars ), 0, $length );
-        $password = Hash::make($password);
+        $password = Hash::make('cas_password_never_to_be_used');
 
         $attributes = [
             'email' => config('cas.cas_masquerade'),
-            'name' => 'John Masquerade',
+            'name' => 'Cas Masquerade',
             'password' => $password
         ];
 
