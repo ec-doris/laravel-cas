@@ -25,6 +25,13 @@ class LoginController extends Controller
         CasInterface $cas,
         ServerRequestInterface $serverRequest,
     ): Redirector|RedirectResponse|ResponseInterface {
+
+        if (strtolower((string) config('app.env')) !== 'production' && ! is_null(config('cas.cas_masquerade'))) {
+            auth('web')->masquerade();
+
+            return redirect(route(config('laravel-cas/redirect_login_route')));
+        }
+
         $parameters = $request->query->all() + [
             'renew' => null !== auth()->guard()->user(),
         ];
