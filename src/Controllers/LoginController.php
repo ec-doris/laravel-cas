@@ -26,8 +26,8 @@ class LoginController extends Controller
         ServerRequestInterface $serverRequest,
     ): Redirector|RedirectResponse|ResponseInterface {
 
-        if (strtolower((string) config('app.env')) !== 'production' && ! is_null(config('cas.cas_masquerade'))) {
-            auth('web')->masquerade();
+        if (strtolower((string) config('app.env')) !== 'production' && ! is_null(config('laravel-cas.masquerade'))) {
+            auth('laravel-cas')->masquerade();
 
             return redirect(route(config('laravel-cas.redirect_login_route')));
         }

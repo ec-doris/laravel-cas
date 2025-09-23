@@ -35,18 +35,17 @@ class CasGuard implements AuthGuard
     ) {}
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * Handle masquerading for development environments
      */
     public function masquerade()
     {
-        if (strtolower((string) config('app.env')) === 'production' && config('cas.cas_masquerade')) {
+        if (strtolower((string) config('app.env')) === 'production' && config('laravel-cas.masquerade')) {
             throw new \Exception('Masquerade cannot be used in a production environment.');
         }
 
         $password = 'xxx-xxx-xxx-xxx';
         $name = 'Cas Masquerade';
-        $email = config('cas.cas_masquerade');
+        $email = config('laravel-cas.masquerade');
         $laravelUser = User::where('email', $email)->first();
 
         if ($laravelUser) {

@@ -33,6 +33,6 @@ class LogoutControllerTest extends TestCase
 
     public function testIfRedirectUri()
     {
-        $this->response->assertRedirect('https://webgate.ec.europa.eu/cas/logout?service=https%3A%2F%2Fmy-app%2Fhomepage-logout');
+        $this->response->assertRedirect('https://webgate.ec.europa.eu/cas/logout?service=http%3A%2F%2Flocalhost');
     }
 }
