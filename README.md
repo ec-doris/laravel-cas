@@ -26,6 +26,7 @@ Add the following repository configuration to your project's `composer.json` fil
 #### Step 2: Install the Package
 
 ```shell
+composer config repositories.laravel-cas vcs https://github.com/ec-doris/laravel-cas
 composer require ec-doris/laravel-cas:dev-main
 ```
 
