@@ -77,9 +77,11 @@ composer require ec-doris/laravel-cas:dev-main
 
 That's it! The package will automatically:
 - Register CAS authentication guards and providers
-- Set up PSR HTTP client dependencies
+- Set up PSR HTTP client dependencies (GuzzleHTTP & Nyholm PSR-7)
 - Register routes and middleware (with fallback)
 - Configure EU Login defaults
+
+No additional dependencies or manual configuration required!
 
 ## Route Publishing (Recommended)
 
@@ -232,7 +234,7 @@ CAS_URL=https://webgate.ec.europa.eu/cas  # Default for EU institutions
 
 ## Manual Configuration (For Advanced Users)
 
-If you need to customize PSR dependencies or disable auto-registration:
+If you need to disable auto-registration and provide your own PSR implementations:
 
 ```env
 CAS_AUTO_REGISTER_MIDDLEWARE=false
@@ -249,13 +251,15 @@ use loophp\psr17\Psr17;
 
 public function register(): void
 {
+    // Only needed if you want to use a different HTTP client
     $this->app->bind(
         ClientInterface::class,
         function(Application $app): ClientInterface {
-            return new Client();
+            return new Client(['timeout' => 30]); // Custom configuration
         }
     );
     
+    // Only needed if you want to use a different PSR-7 implementation
     $this->app->bind(
         Psr17Interface::class,
         function(Application $app): Psr17Interface {
@@ -272,6 +276,8 @@ public function register(): void
     );
 }
 ```
+
+> **Note**: The package now automatically includes and configures GuzzleHTTP and Nyholm PSR-7 dependencies, so manual configuration is only needed for customization.
 
 ## User Model Customization
 
@@ -312,6 +318,18 @@ composer config repositories.laravel-cas vcs https://github.com/ec-doris/laravel
 **Solution**: Specify the branch explicitly:
 ```shell
 composer require ec-doris/laravel-cas:dev-main
+```
+
+**Problem**: `Class "Nyholm\Psr7\Factory\Psr17Factory" not found`
+
+**Solution**: This indicates the PSR-7 dependencies weren't installed properly. Run:
+```shell
+composer update ec-doris/laravel-cas
+```
+
+If the problem persists, manually install the dependencies:
+```shell
+composer require guzzlehttp/guzzle nyholm/psr7 loophp/psr17
 ```
 
 **Problem**: Authentication not working after installation

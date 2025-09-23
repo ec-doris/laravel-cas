@@ -39,7 +39,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use loophp\psr17\Psr17;
 use loophp\psr17\Psr17Interface;
-use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Client\ClientInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
@@ -181,7 +180,7 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind(
                 Psr17Interface::class,
                 static function (Application $app): Psr17Interface {
-                    $psr17Factory = new Psr17Factory();
+                    $psr17Factory = new \Nyholm\Psr7\Factory\Psr17Factory();
 
                     return new Psr17(
                         $psr17Factory,

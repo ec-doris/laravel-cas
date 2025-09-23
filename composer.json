@@ -29,12 +29,13 @@
         "ext-dom": "*",
         "ext-simplexml": "*",
         "ecphp/cas-lib": "^3.0",
+        "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^9 || ^10 || ^11 || ^12",
+        "loophp/psr17": "^2.0",
+        "nyholm/psr7": "^1.8",
         "symfony/cache": "^6.4 || ^7.0"
     },
     "require-dev": {
-        "guzzlehttp/guzzle": "^7.9",
-        "nyholm/psr7": "^1.8",
         "orchestra/testbench": "^8.26 || ^9.4",
         "roave/security-advisories": "dev-latest",
         "symfony/psr-http-message-bridge": "^6.4 || ^7.1"
