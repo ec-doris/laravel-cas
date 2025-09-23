@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace EcDoris\LaravelCas\Auth;
 
+use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard as AuthGuard;
 use Illuminate\Contracts\Auth\UserProvider;
@@ -46,7 +47,7 @@ class CasGuard implements AuthGuard
         $password = 'xxx-xxx-xxx-xxx';
         $name = 'Cas Masquerade';
         $email = config('cas.cas_masquerade');
-        $laravelUser = \App\Models\User::where('email', $email)->first();
+        $laravelUser = User::where('email', $email)->first();
 
         if ($laravelUser) {
             $this->setUser($laravelUser);
@@ -59,7 +60,7 @@ class CasGuard implements AuthGuard
             'password' => $password,
         ];
 
-        $laravelUser = \App\Models\User::create($attributes);
+        $laravelUser = User::create($attributes);
         $this->setUser($laravelUser);
 
         return $laravelUser;

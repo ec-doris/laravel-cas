@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace EcDoris\LaravelCas\Auth;
 
+use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Session\Session;
@@ -51,20 +52,11 @@ class CasUserProvider implements UserProvider
         if (! $email) {
             return null;
         }
-
         
         $password = 'xxx-xxx-xxx-xxx';
         $name = ($credentials['attributes']['firstName'].' '.$credentials['attributes']['lastName']) ?? '';
         $name = ucwords(strtolower($name));
         $organisation = $credentials['attributes']['departmentNumber'] ?? null;
-
-        $laravelUser = \App\Models\User::where('email', $email)->first();
-
-        if ($laravelUser) {
-            $this->model = $laravelUser;
-
-            return $this->model;
-        }
 
         $attributes = [
             'email' => $email,
@@ -73,9 +65,18 @@ class CasUserProvider implements UserProvider
             'organisation' => $organisation,
         ];
 
-        $laravelUser = \App\Models\User::create($attributes);
-        $this->model = $laravelUser;
+        // Find existing user or create new one
+        $laravelUser = User::where('email', $email)->first();
 
+        if ($laravelUser) {
+            // User exists - use it
+            $this->model = $laravelUser;
+            return $this->model;
+        }
+
+        // Create new Laravel User
+        $laravelUser = User::create($attributes);
+        $this->model = $laravelUser;
         return $this->model;
     }
 
