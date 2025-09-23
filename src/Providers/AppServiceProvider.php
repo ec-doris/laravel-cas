@@ -40,6 +40,8 @@ use Illuminate\Support\ServiceProvider;
 use loophp\psr17\Psr17;
 use loophp\psr17\Psr17Interface;
 use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 use function class_exists;
@@ -190,6 +192,19 @@ class AppServiceProvider extends ServiceProvider
                         $psr17Factory,
                         $psr17Factory
                     );
+                }
+            );
+        }
+
+        // Auto-bind PSR ServerRequest conversion
+        if (!$this->app->bound(ServerRequestInterface::class)) {
+            $this->app->bind(
+                ServerRequestInterface::class,
+                static function (Application $app): ServerRequestInterface {
+                    $psr17Factory = new \Nyholm\Psr7\Factory\Psr17Factory();
+                    $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
+                    
+                    return $psrHttpFactory->createRequest($app->make('request'));
                 }
             );
         }

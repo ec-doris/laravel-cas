@@ -77,7 +77,7 @@ composer require ec-doris/laravel-cas:dev-main
 
 That's it! The package will automatically:
 - Register CAS authentication guards and providers
-- Set up PSR HTTP client dependencies (GuzzleHTTP & Nyholm PSR-7)
+- Set up PSR HTTP client dependencies (GuzzleHTTP, Nyholm PSR-7, Symfony PSR Bridge)
 - Register routes and middleware (with fallback)
 - Configure EU Login defaults
 
@@ -331,6 +331,18 @@ Or clear Composer cache and try again:
 ```shell
 composer clear-cache
 composer require ec-doris/laravel-cas:dev-main
+```
+
+**Problem**: `Unable to resolve PSR request. Please install the "symfony/psr-http-message-bridge" package.`
+
+**Solution**: This dependency should be automatically installed. If you see this error, run:
+```shell
+composer require symfony/psr-http-message-bridge
+```
+
+Or update the package:
+```shell
+composer update ec-doris/laravel-cas
 ```
 
 **Problem**: `Class "Nyholm\Psr7\Factory\Psr17Factory" not found`
