@@ -1,15 +1,29 @@
 {
     "name": "ec-doris/laravel-cas",
-    "description": "A bundle for Laravel, providing authentication against a Central Authentication Service (CAS) server.",
+    "description": "A Laravel CAS authentication bundle for EU Login and EC applications with automatic configuration and route publishing.",
+    "type": "library",
     "license": "BSD-3-Clause",
     "keywords": [
         "authentication",
         "cas",
         "central authentication service",
         "single sign-on",
-        "sso"
+        "sso",
+        "laravel",
+        "eu-login",
+        "european-commission"
     ],
     "homepage": "https://github.com/ec-doris/laravel-cas",
+    "support": {
+        "issues": "https://github.com/ec-doris/laravel-cas/issues",
+        "source": "https://github.com/ec-doris/laravel-cas"
+    },
+    "authors": [
+        {
+            "name": "EC DORIS Team",
+            "homepage": "https://github.com/ec-doris"
+        }
+    ],
     "require": {
         "php": ">= 8.1",
         "ext-dom": "*",

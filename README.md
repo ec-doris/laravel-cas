@@ -4,9 +4,76 @@ A CAS bundle for Laravel with automatic configuration for EU Login and EC applic
 
 ## Installation
 
-```shell
-composer require ec-doris/laravel-cas
+### From GitHub Repository
+
+This package is hosted on GitHub and requires adding the repository to your `composer.json` file.
+
+#### Step 1: Add Repository to composer.json
+
+Add the following repository configuration to your project's `composer.json` file:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/ec-doris/laravel-cas"
+        }
+    ]
+}
 ```
+
+#### Step 2: Install the Package
+
+```shell
+composer require ec-doris/laravel-cas:dev-main
+```
+
+> **Note**: Since this package is hosted on GitHub, you need to specify `dev-main` to install from the main branch. For production use, it's recommended to specify a specific commit or create tagged releases.
+
+#### For Production (Recommended)
+
+To lock to a specific commit for production stability:
+
+```shell
+composer require ec-doris/laravel-cas:dev-main#abc1234
+```
+
+Replace `abc1234` with the specific commit hash you want to use.
+
+#### Complete composer.json Example
+
+Here's a complete example showing how your `composer.json` should look:
+
+```json
+{
+    "name": "your-org/your-project",
+    "type": "project",
+    "description": "Your Laravel application",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/ec-doris/laravel-cas"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "laravel/framework": "^9.0|^10.0|^11.0",
+        "ec-doris/laravel-cas": "dev-main"
+    }
+}
+```
+
+#### Alternative: One-Command Installation
+
+You can also add the repository and install the package in one command:
+
+```shell
+composer config repositories.laravel-cas vcs https://github.com/ec-doris/laravel-cas
+composer require ec-doris/laravel-cas:dev-main
+```
+
+### Post-Installation
 
 That's it! The package will automatically:
 - Register CAS authentication guards and providers
@@ -228,3 +295,53 @@ If upgrading from an older version:
 3. The package now handles these automatically
 4. Update your `.env` file with the new variable names
 5. Optionally publish and customize the new config files
+
+## Troubleshooting
+
+### Installation Issues
+
+**Problem**: `Package ec-doris/laravel-cas not found`
+
+**Solution**: Make sure you've added the repository to your `composer.json`:
+```shell
+composer config repositories.laravel-cas vcs https://github.com/ec-doris/laravel-cas
+```
+
+**Problem**: `The requested package ec-doris/laravel-cas could not be found in any version`
+
+**Solution**: Specify the branch explicitly:
+```shell
+composer require ec-doris/laravel-cas:dev-main
+```
+
+**Problem**: Authentication not working after installation
+
+**Solution**: 
+1. Ensure your `.env` file has the required CAS configuration
+2. Add auth guards to `config/auth.php` as shown above
+3. Clear your application cache: `php artisan config:clear`
+
+### GitHub Access Issues
+
+**Problem**: Access denied when installing from private repository
+
+**Solution**: Configure Composer with your GitHub token:
+```shell
+composer config github-oauth.github.com YOUR_GITHUB_TOKEN
+```
+
+Or add to your global Composer config:
+```shell
+composer config --global github-oauth.github.com YOUR_GITHUB_TOKEN
+```
+
+### Development Installation
+
+For development or contributing to this package:
+
+```shell
+git clone https://github.com/ec-doris/laravel-cas.git
+cd laravel-cas
+composer install
+./vendor/bin/phpunit
+```
