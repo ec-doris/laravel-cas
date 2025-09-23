@@ -320,6 +320,19 @@ composer config repositories.laravel-cas vcs https://github.com/ec-doris/laravel
 composer require ec-doris/laravel-cas:dev-main
 ```
 
+**Problem**: `Your requirements could not be resolved to an installable set of packages` with version constraint errors
+
+**Solution**: This usually indicates a version conflict. Try:
+```shell
+composer update --with-all-dependencies
+```
+
+Or clear Composer cache and try again:
+```shell
+composer clear-cache
+composer require ec-doris/laravel-cas:dev-main
+```
+
 **Problem**: `Class "Nyholm\Psr7\Factory\Psr17Factory" not found`
 
 **Solution**: This indicates the PSR-7 dependencies weren't installed properly. Run:
