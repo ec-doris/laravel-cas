@@ -4,68 +4,7 @@ A CAS bundle for Laravel with automatic configuration for EU Login and EC applic
 
 ## Installation
 
-### From GitHub Repository
-
-This package is hosted on GitHub and requires adding the repository to your `composer.json` file.
-
-#### Step 1: Add Repository to composer.json
-
-Add the following repository configuration to your project's `composer.json` file:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/ec-doris/laravel-cas"
-        }
-    ]
-}
-```
-
-#### Step 2: Install the Package
-
-```shell
-composer config repositories.laravel-cas vcs https://github.com/ec-doris/laravel-cas
-composer require ec-doris/laravel-cas:dev-main
-```
-
-> **Note**: Since this package is hosted on GitHub, you need to specify `dev-main` to install from the main branch. For production use, it's recommended to specify a specific commit or create tagged releases.
-
-#### For Production (Recommended)
-
-To lock to a specific commit for production stability:
-
-```shell
-composer require ec-doris/laravel-cas:dev-main#abc1234
-```
-
-Replace `abc1234` with the specific commit hash you want to use.
-
-#### Complete composer.json Example
-
-Here's a complete example showing how your `composer.json` should look:
-
-```json
-{
-    "name": "your-org/your-project",
-    "type": "project",
-    "description": "Your Laravel application",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/ec-doris/laravel-cas"
-        }
-    ],
-    "require": {
-        "php": "^8.1",
-        "laravel/framework": "^9.0|^10.0|^11.0",
-        "ec-doris/laravel-cas": "dev-main"
-    }
-}
-```
-
-#### Alternative: One-Command Installation
+### One-Command Installation
 
 You can also add the repository and install the package in one command:
 
