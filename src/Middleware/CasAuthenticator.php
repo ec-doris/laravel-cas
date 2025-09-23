@@ -35,6 +35,14 @@ class CasAuthenticator
 
         auth('laravel-cas')->attempt($response->getCredentials());
 
-        return redirect(route(config('laravel-cas.redirect_login_route')));
+        // Try to redirect to configured route, fallback to homepage or dashboard
+        $redirectRoute = config('laravel-cas.redirect_login_route', 'laravel-cas-homepage');
+        
+        try {
+            return redirect(route($redirectRoute));
+        } catch (\Symfony\Component\Routing\Exception\RouteNotFoundException $e) {
+            // Fallback to URL if route doesn't exist
+            return redirect('/homepage');
+        }
     }
 }

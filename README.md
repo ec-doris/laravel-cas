@@ -83,6 +83,50 @@ That's it! The package will automatically:
 
 No additional dependencies or manual configuration required!
 
+## Quick Setup Guide
+
+After installing the package, follow these steps for immediate functionality:
+
+1. **Publish CAS routes**:
+   ```shell
+   php artisan cas:install --all
+   ```
+
+2. **Update your `.env` file**:
+   ```env
+   CAS_URL=https://webgate.ec.europa.eu/cas
+   CAS_REDIRECT_LOGIN_URL=https://your-app.com/login
+   CAS_REDIRECT_LOGOUT_URL=https://your-app.com/
+   ```
+
+3. **Add auth guards to `config/auth.php`**:
+   ```php
+   'guards' => [
+       'laravel-cas' => [
+           'driver' => 'laravel-cas',
+           'provider' => 'laravel-cas',
+       ],
+   ],
+   'providers' => [
+       'laravel-cas' => [
+           'driver' => 'laravel-cas',
+       ],
+   ],
+   ```
+
+4. **Protect your routes** by adding CAS middleware:
+   ```php
+   Route::get('/dashboard', function () {
+       $user = auth('laravel-cas')->user();
+       return view('dashboard', compact('user'));
+   })->middleware('cas.auth');
+   ```
+
+5. **Test the flow**:
+   - Visit `/login` to start CAS authentication
+   - After authentication, you'll be redirected to `/homepage`
+   - Access protected routes with `/dashboard` etc.
+
 ## Route Publishing (Recommended)
 
 For better control and frontend tool integration (like Ziggy), publish the CAS routes:
@@ -122,9 +166,14 @@ require __DIR__ . '/laravel-cas.php';
 Create a `.env` file with your CAS settings:
 
 ```env
-# Required
+# Required - CAS Server URL
 CAS_URL=https://webgate.ec.europa.eu/cas
-CAS_REDIRECT_LOGIN_URL=https://your-app.com/homepage
+
+# Required - Where CAS should redirect after authentication
+# This should be a route in your app that has the cas.auth middleware
+CAS_REDIRECT_LOGIN_URL=https://your-app.com/login
+
+# Required - Where to redirect after logout
 CAS_REDIRECT_LOGOUT_URL=https://your-app.com/
 
 # Optional - Development
@@ -135,6 +184,8 @@ CAS_DEBUG=false
 CAS_INSTITUTION_CODE=EC
 CAS_PROXY_CALLBACK_URL=https://your-app.com/proxy/callback
 ```
+
+> **Important**: Set `CAS_REDIRECT_LOGIN_URL` to point to your app's `/login` route (which has CAS middleware), not to `/dashboard` or other protected routes. The CAS server will redirect back to this URL with the service ticket.
 
 ## Authentication Guard Setup
 
@@ -356,6 +407,37 @@ If the problem persists, manually install the dependencies:
 ```shell
 composer require guzzlehttp/guzzle nyholm/psr7 loophp/psr17
 ```
+
+**Problem**: `Route [login] not defined` or `Route [laravel-cas-homepage] not defined`
+
+**Solution**: This happens when routes aren't published or configured correctly. 
+
+1. **Publish the routes first**:
+   ```shell
+   php artisan cas:install --routes
+   ```
+
+2. **Or manually create a CAS login route** in your `routes/web.php`:
+   ```php
+   Route::get('/login', function() {
+       return redirect('/dashboard'); // Or wherever you want users to go
+   })->middleware('cas.auth')->name('login');
+   ```
+
+3. **Update your .env** to point to the correct login URL:
+   ```env
+   CAS_REDIRECT_LOGIN_URL=https://your-app.com/login
+   ```
+
+**Problem**: Getting ticket parameter on wrong route (e.g., `/dashboard?ticket=...`)
+
+**Solution**: Your CAS service URL is misconfigured. Update your `.env`:
+```env
+# Change this from dashboard to login
+CAS_REDIRECT_LOGIN_URL=https://your-app.com/login
+```
+
+The CAS server should redirect to `/login` (with CAS middleware), which then redirects to `/dashboard` after authentication.
 
 **Problem**: Authentication not working after installation
 

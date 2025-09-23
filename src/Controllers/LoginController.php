@@ -29,7 +29,13 @@ class LoginController extends Controller
         if (strtolower((string) config('app.env')) !== 'production' && ! is_null(config('laravel-cas.masquerade'))) {
             auth('laravel-cas')->masquerade();
 
-            return redirect(route(config('laravel-cas.redirect_login_route')));
+            $redirectRoute = config('laravel-cas.redirect_login_route', 'laravel-cas-homepage');
+            
+            try {
+                return redirect(route($redirectRoute));
+            } catch (\Symfony\Component\Routing\Exception\RouteNotFoundException $e) {
+                return redirect('/homepage');
+            }
         }
 
         $parameters = $request->query->all() + [

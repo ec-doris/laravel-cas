@@ -84,7 +84,7 @@ return [
                 'gateway',
             ],
             'default_parameters' => [
-                'service' => env('CAS_REDIRECT_LOGIN_URL', 'http://localhost/homepage'),
+                'service' => env('CAS_REDIRECT_LOGIN_URL', 'http://localhost/login'),
             ],
         ],
         'serviceValidate' => [
@@ -98,7 +98,7 @@ return [
             'default_parameters' => [
                 'format' => 'JSON',
                 'groups' => true,
-                'service' => env('CAS_REDIRECT_LOGIN_URL', 'http://localhost/homepage'),
+                'service' => env('CAS_REDIRECT_LOGIN_URL', 'http://localhost/login'),
                 // 'pgtUrl' => env('CAS_PROXY_CALLBACK_URL', url('/proxy/callback')),
             ],
         ],
