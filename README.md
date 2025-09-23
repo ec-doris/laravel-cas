@@ -6,7 +6,7 @@ A CAS bundle for Laravel with automatic configuration for EU Login and EC applic
 
 ### One-Command Installation
 
-You can also add the repository and install the package in one command:
+You can add the repository and install the package in two commands:
 
 ```shell
 composer config repositories.laravel-cas vcs https://github.com/ec-doris/laravel-cas
@@ -35,7 +35,7 @@ After installing the package, follow these steps for immediate functionality:
 2. **Update your `.env` file**:
    ```env
    CAS_URL=https://webgate.ec.europa.eu/cas
-   CAS_REDIRECT_LOGIN_URL=https://your-app.com/login
+   CAS_REDIRECT_LOGIN_URL=https://your-app.com/dashboard
    CAS_REDIRECT_LOGOUT_URL=https://your-app.com/
    ```
 
@@ -65,7 +65,7 @@ After installing the package, follow these steps for immediate functionality:
 5. **Test the flow**:
    - Visit `/login` to start CAS authentication
    - After authentication, you'll be redirected to `/homepage`
-   - Access protected routes with `/dashboard` etc.
+   - The can be manually changed later.
 
 ## Route Publishing (Recommended)
 
@@ -111,7 +111,7 @@ CAS_URL=https://webgate.ec.europa.eu/cas
 
 # Required - Where CAS should redirect after authentication
 # This should be a route in your app that has the cas.auth middleware
-CAS_REDIRECT_LOGIN_URL=https://your-app.com/login
+CAS_REDIRECT_LOGIN_URL=https://your-app.com/dashboard
 
 # Required - Where to redirect after logout
 CAS_REDIRECT_LOGOUT_URL=https://your-app.com/
@@ -124,8 +124,6 @@ CAS_DEBUG=false
 CAS_INSTITUTION_CODE=EC
 CAS_PROXY_CALLBACK_URL=https://your-app.com/proxy/callback
 ```
-
-> **Important**: Set `CAS_REDIRECT_LOGIN_URL` to point to your app's `/login` route (which has CAS middleware), not to `/dashboard` or other protected routes. The CAS server will redirect back to this URL with the service ticket.
 
 ## Authentication Guard Setup
 
@@ -191,9 +189,9 @@ CAS_AUTO_REGISTER_MIDDLEWARE=false
 
 After publishing routes, you'll have access to:
 
-- `/login` - CAS login endpoint
-- `/logout` - CAS logout endpoint  
-- `/homepage` - Post-login homepage
+- `/login` - CAS login endpoint (named: laravel-cas-login)
+- `/logout` - CAS logout endpoint (name: laravel-cas-logout) 
+- `/homepage` - Post-login homepage 
 - `/proxy/callback` - CAS proxy callback
 
 These routes are now:
