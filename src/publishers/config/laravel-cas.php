@@ -31,7 +31,6 @@ return [
     */
     'auto_register_middleware' => env('CAS_AUTO_REGISTER_MIDDLEWARE', true),
     'auto_load_routes' => env('CAS_AUTO_LOAD_ROUTES', true),
-    'user_model' => env('CAS_USER_MODEL', 'App\Models\User'),
     
     /*
     |--------------------------------------------------------------------------

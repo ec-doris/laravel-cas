@@ -268,15 +268,9 @@ public function register(): void
 
 > **Note**: The package now automatically includes and configures GuzzleHTTP and Nyholm PSR-7 dependencies, so manual configuration is only needed for customization.
 
-## User Model Customization
+## User Model
 
-By default, the package uses `App\Models\User`. To use a different model:
-
-```env
-CAS_USER_MODEL=App\Models\CustomUser
-```
-
-Ensure your user model has these attributes:
+The package uses `App\Models\User` for authentication. Ensure your user model has these attributes:
 - `email` (required)
 - `name` 
 - `organisation` (for EU/EC applications)
