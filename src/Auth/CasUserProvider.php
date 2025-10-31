@@ -56,14 +56,23 @@ class CasUserProvider implements UserProvider
         $password = 'xxx-xxx-xxx-xxx';
         $name = ($credentials['attributes']['firstName'].' '.$credentials['attributes']['lastName']) ?? '';
         $name = ucwords(strtolower($name));
-        $organisation = $credentials['attributes']['departmentNumber'] ?? null;
+        $departmentNumber = $credentials['attributes']['departmentNumber'] ?? null;
 
         $attributes = [
             'email' => $email,
             'name' => $name,
             'password' => $password,
-            'organisation' => $organisation,
         ];
+
+        if ($departmentNumber) {
+            $userModel = new User();
+            if (in_array('departmentNumber', $userModel->getFillable()) || $userModel->getGuarded() === ['*'] || $userModel->getGuarded() === []) {
+                $attributes['departmentNumber'] = $departmentNumber;
+            }
+            if (in_array('organisation', $userModel->getFillable()) || $userModel->getGuarded() === ['*'] || $userModel->getGuarded() === []) {
+                $attributes['organisation'] = $departmentNumber;
+            }
+        }
 
         // Find existing user or create new one
         $laravelUser = User::where('email', $email)->first();

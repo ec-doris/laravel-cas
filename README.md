@@ -118,6 +118,8 @@ CAS_REDIRECT_LOGOUT_URL=https://your-app.com/
 
 # Optional - Development
 CAS_MASQUERADE=your.email@example.com  # For development only!
+CAS_DEMO_MODE=false  # Enable demo login mode (development only!)
+CAS_DEMO_LOGIN_URL=https://demo-eulogin.cnect.eu  # Demo login form URL
 CAS_DEBUG=false
 
 # Optional - Package Behavior
@@ -274,6 +276,41 @@ The package uses `App\Models\User` for authentication. Ensure your user model ha
 - `email` (required)
 - `name` 
 - `organisation` (for EU/EC applications)
+- `departmentNumber` (optional, for EU/EC applications)
+
+## Development Modes
+
+### Masquerade Mode
+
+For local development without CAS server access, use masquerade mode to bypass authentication:
+
+```env
+CAS_MASQUERADE=your.email@example.com
+```
+
+When enabled (non-production only), visiting `/login` will automatically create/login the user with the specified email.
+
+### Demo Mode
+
+For demonstrations and testing with a custom login form, use demo mode:
+
+```env
+CAS_DEMO_MODE=true
+CAS_DEMO_LOGIN_URL=https://demo-eulogin.cnect.eu
+```
+
+When enabled (non-production only):
+1. Visiting `/login` redirects to the demo login form with a `returnto` parameter
+2. The demo form collects user information and redirects back with a `ticket=DEMO_{json}` parameter
+3. The middleware decodes the ticket and creates/logs in the user
+
+The demo ticket JSON payload should contain:
+- `email` (required)
+- `firstName` (optional)
+- `lastName` (optional)
+- `departmentNumber` (optional)
+
+**Important**: Neither masquerade nor demo mode can be used in production environments. The package will throw an exception if `APP_ENV=production` with these modes enabled.
 
 ## Migration from Previous Versions
 

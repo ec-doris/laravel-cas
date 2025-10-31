@@ -42,3 +42,5 @@ php artisan cas:install --all
 - **HTTP layer**: PSR-7/PSR-17 abstraction with GuzzleHTTP and Nyholm PSR-7
 - **Laravel integration**: Auto-registered via package discovery, extends Auth Guard/UserProvider
 - **Target users**: European Commission/EU institution Laravel developers
+- **User model**: Always uses `App\Models\User` (not configurable)
+- **Dev modes**: Masquerade mode (bypass auth) and Demo mode (custom login form) - both blocked in production

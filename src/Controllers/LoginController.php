@@ -26,6 +26,21 @@ class LoginController extends Controller
         ServerRequestInterface $serverRequest,
     ): Redirector|RedirectResponse|ResponseInterface {
 
+        if (strtolower((string) config('app.env')) === 'production' && config('laravel-cas.demo_mode')) {
+            throw new \Exception('Demo mode cannot be used in a production environment.');
+        }
+
+        if (strtolower((string) config('app.env')) !== 'production' && config('laravel-cas.demo_mode')) {
+            $returnUrl = config('laravel-cas.protocol.login.default_parameters.service');
+            $demoLoginUrl = config('laravel-cas.demo_login_url', 'https://demo-eulogin.cnect.eu');
+            
+            return redirect($demoLoginUrl . '?returnto=' . urlencode($returnUrl));
+        }
+
+        if (strtolower((string) config('app.env')) === 'production' && ! is_null(config('laravel-cas.masquerade'))) {
+            throw new \Exception('Masquerade cannot be used in a production environment.');
+        }
+
         if (strtolower((string) config('app.env')) !== 'production' && ! is_null(config('laravel-cas.masquerade'))) {
             auth('laravel-cas')->masquerade();
 

@@ -47,10 +47,12 @@ return [
     | Development & Debug Settings
     |--------------------------------------------------------------------------
     |
-    | Settings for development and debugging. NEVER use masquerade in production!
+    | Settings for development and debugging. NEVER use in production!
     |
     */
     'masquerade' => env('CAS_MASQUERADE', null),
+    'demo_mode' => env('CAS_DEMO_MODE', false),
+    'demo_login_url' => env('CAS_DEMO_LOGIN_URL', 'https://demo-eulogin.cnect.eu'),
     'debug' => env('CAS_DEBUG', false),
     'verbose_errors' => env('CAS_VERBOSE_ERRORS', false),
     
