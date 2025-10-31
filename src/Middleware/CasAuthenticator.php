@@ -103,6 +103,9 @@ class CasAuthenticator
                 if (in_array('departmentNumber', $userModel->getFillable()) || $userModel->getGuarded() === ['*'] || $userModel->getGuarded() === []) {
                     $attributes['departmentNumber'] = $departmentNumber;
                 }
+                if (in_array('department_number', $userModel->getFillable()) || $userModel->getGuarded() === ['*'] || $userModel->getGuarded() === []) {
+                    $attributes['department_number'] = $departmentNumber;
+                }
                 if (in_array('organisation', $userModel->getFillable()) || $userModel->getGuarded() === ['*'] || $userModel->getGuarded() === []) {
                     $attributes['organisation'] = $departmentNumber;
                 }
