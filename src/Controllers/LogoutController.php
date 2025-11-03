@@ -25,6 +25,20 @@ class LogoutController extends Controller
         CasInterface $cas,
         ServerRequestInterface $serverRequest
     ): Redirector|RedirectResponse|ResponseInterface {
+        // In masquerade or demo mode, only clear the local session without CAS logout
+        $isMasqueradeMode = strtolower((string) config('app.env')) !== 'production' && ! is_null(config('laravel-cas.masquerade'));
+        $isDemoMode = strtolower((string) config('app.env')) !== 'production' && config('laravel-cas.demo_mode');
+        
+        if ($isMasqueradeMode || $isDemoMode) {
+            if (auth()->check()) {
+                auth()->logout();
+            }
+            
+            $redirectUrl = config('laravel-cas.redirect_logout_url') ?: '/';
+            return redirect($redirectUrl);
+        }
+
+        // Normal mode: perform CAS logout
         $response = $cas
             ->logout(
                 $serverRequest->withQueryParams(
@@ -35,7 +49,8 @@ class LogoutController extends Controller
         if (auth()->check()) {
             auth()->logout();
 
-            return redirect('/');
+            $redirectUrl = config('laravel-cas.redirect_logout_url') ?: '/';
+            return redirect($redirectUrl);
         }
 
         return $response;
