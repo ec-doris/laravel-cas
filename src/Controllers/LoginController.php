@@ -44,7 +44,7 @@ class LoginController extends Controller
         if (strtolower((string) config('app.env')) !== 'production' && ! is_null(config('laravel-cas.masquerade'))) {
             auth('laravel-cas')->masquerade();
 
-            $redirectRoute = config('laravel-cas.redirect_login_route', 'laravel-cas-homepage');
+            $redirectRoute = config('laravel-cas.redirect_login_route', 'dashboard');
             
             try {
                 return redirect(route($redirectRoute));
@@ -56,6 +56,6 @@ class LoginController extends Controller
         $casUrl = config('laravel-cas.cas_url');
         $serviceUrl = route('laravel-cas-callback');
 
-        return new RedirectResponse(sprintf('%s/login?service=%s', $casUrl, $serviceUrl));
+        return redirect(sprintf('%s/login?service=%s', $casUrl, $serviceUrl));
     }
 }
