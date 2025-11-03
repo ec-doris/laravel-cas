@@ -45,7 +45,13 @@
     },
     "autoload": {
         "psr-4": {
-            "EcDoris\\LaravelCas\\": "src/",
+            "EcDoris\\LaravelCas\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "App\\": "tests/",
+            "App\\Models\\Factories\\": "tests/Factories/",
             "EcDoris\\LaravelCas\\Tests\\": "tests/"
         }
     },

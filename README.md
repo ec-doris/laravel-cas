@@ -35,7 +35,14 @@ After installing the package, follow these steps for immediate functionality:
 2. **Update your `.env` file**:
    ```env
    CAS_URL=https://webgate.ec.europa.eu/cas
-   CAS_REDIRECT_LOGIN_URL=https://your-app.com/dashboard
+   
+   # The full URL where CAS sends the user back to (e.g., your homepage).
+   CAS_REDIRECT_LOGIN_URL=https://your-app.com/
+
+   # The named route to redirect to after a successful login (e.g., a dashboard).
+   CAS_REDIRECT_LOGIN_ROUTE=dashboard
+
+   # Where to go after logging out
    CAS_REDIRECT_LOGOUT_URL=https://your-app.com/
    ```
 
@@ -63,9 +70,8 @@ After installing the package, follow these steps for immediate functionality:
    ```
 
 5. **Test the flow**:
-   - Visit `/login` to start CAS authentication
-   - After authentication, you'll be redirected to `/homepage`
-   - The can be manually changed later.
+   - Visit `/login` to start CAS authentication.
+   - After successful CAS authentication, you will be redirected to the route named in your `CAS_REDIRECT_LOGIN_ROUTE` variable (e.g., `/dashboard`).
 
 ## Route Publishing (Recommended)
 
@@ -103,28 +109,56 @@ require __DIR__ . '/laravel-cas.php';
 
 ## Basic Configuration
 
-Create a `.env` file with your CAS settings:
+Create a `.env` file with your CAS settings. The login process involves two key redirects, which are configured with separate variables.
+
+### Step 1: Redirect to CAS and back (`CAS_REDIRECT_LOGIN_URL`)
+
+When a user tries to access a protected page, they are first sent to the CAS server to log in. You must tell the CAS server where to send them back *to*. This is done with `CAS_REDIRECT_LOGIN_URL`.
+
+- **What it is**: The absolute URL of a publicly accessible page in your application where the CAS middleware can process the ticket. To avoid potential redirect loops, this should **not** be a route that is protected by the `cas.auth` middleware itself.
+- **What it should be**: A simple, unprotected URL like your homepage. For example: `https://your-app.com/`
+
+### Step 2: Redirect after successful login (`CAS_REDIRECT_LOGIN_ROUTE`)
+
+After the CAS server sends the user back to your application (e.g., to your homepage with a `ticket` parameter), the middleware validates their ticket. Once validated, the middleware needs to know where to send the authenticated user. This is an internal redirect to a named Laravel route.
+
+- **What it is**: The **name** of a Laravel route within your application, typically a user-specific page.
+- **What it should be**: `dashboard`, `user.profile`, or whatever your post-login landing page is named.
+
+### Example `.env` Configuration
 
 ```env
-# Required - CAS Server URL
+# Required - The URL of your CAS Server
 CAS_URL=https://webgate.ec.europa.eu/cas
 
-# Required - Where CAS should redirect after authentication
-# This should be a route in your app that has the cas.auth middleware
-CAS_REDIRECT_LOGIN_URL=https://your-app.com/dashboard
+# --------------------------------------------------------------------------
+# Login Redirects - Explained Above
+# --------------------------------------------------------------------------
 
-# Required - Where to redirect after logout
+# Required - The full URL where the CAS server will redirect the user back to.
+# This should be a publicly accessible page like your homepage.
+CAS_REDIRECT_LOGIN_URL=https://your-app.com/
+
+# Required - The name of the Laravel route to redirect to after a successful login.
+# This is typically a dashboard or user profile page.
+CAS_REDIRECT_LOGIN_ROUTE=dashboard
+
+# --------------------------------------------------------------------------
+# Other Settings
+# --------------------------------------------------------------------------
+
+# Required - Where to redirect after the user logs out.
 CAS_REDIRECT_LOGOUT_URL=https://your-app.com/
 
-# Optional - Development
-CAS_MASQUERADE=your.email@example.com  # For development only!
-CAS_DEMO_MODE=false  # Enable demo login mode (development only!)
-CAS_DEMO_LOGIN_URL=https://demo-eulogin.cnect.eu  # Demo login form URL
-CAS_DEBUG=false
+# Optional - For development only! Bypasses CAS and logs in the specified user.
+CAS_MASQUERADE=your.email@example.com
 
-# Optional - Package Behavior
-CAS_INSTITUTION_CODE=EC
-CAS_PROXY_CALLBACK_URL=https://your-app.com/proxy/callback
+# Optional - For development only! Enables a demo login form.
+CAS_DEMO_MODE=false
+CAS_DEMO_LOGIN_URL=https://demo-eulogin.cnect.eu
+
+# Optional - Enables CAS debug logging.
+CAS_DEBUG=false
 ```
 
 ## Authentication Guard Setup
@@ -275,8 +309,9 @@ public function register(): void
 The package uses `App\Models\User` for authentication. Ensure your user model has these attributes:
 - `email` (required)
 - `name` 
-- `organisation` (for EU/EC applications)
+- `organisation` (optional, for EU/EC applications)
 - `departmentNumber` (optional, for EU/EC applications)
+- `department_number` (optional, for EU/EC applications)
 
 ## Development Modes
 
