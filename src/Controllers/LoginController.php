@@ -49,7 +49,7 @@ class LoginController extends Controller
             try {
                 return redirect(route($redirectRoute));
             } catch (\Symfony\Component\Routing\Exception\RouteNotFoundException $e) {
-                return redirect('/homepage');
+                return redirect('/');
             }
         }
 
