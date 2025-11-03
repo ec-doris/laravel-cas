@@ -66,6 +66,7 @@
         }
     },
     "scripts": {
-        "phpunit": "vendor/bin/phpunit"
+        "phpunit": "vendor/bin/phpunit",
+        "test": "vendor/bin/phpunit"
     }
 }

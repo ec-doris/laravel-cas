@@ -115,6 +115,13 @@ class InstallCasCommand extends Command
      */
     protected function publishRoutes(): void
     {
+        $routesFile = base_path('routes/laravel-cas.php');
+
+        if ($this->files->exists($routesFile) && !$this->option('force')) {
+            $this->warn('Routes file already exists. Use --force to overwrite.');
+            return;
+        }
+
         $this->info('Publishing CAS routes...');
         
         $this->call('vendor:publish', [
@@ -130,6 +137,13 @@ class InstallCasCommand extends Command
      */
     protected function publishConfig(): void
     {
+        $configFile = config_path('laravel-cas.php');
+
+        if ($this->files->exists($configFile) && !$this->option('force')) {
+            $this->warn('Configuration file already exists. Use --force to overwrite.');
+            return;
+        }
+
         $this->info('Publishing CAS configuration...');
         
         $this->call('vendor:publish', [
@@ -189,16 +203,11 @@ class InstallCasCommand extends Command
         $this->line('Next steps:');
         $this->line('1. Configure your .env file with CAS settings:');
         $this->line('   CAS_URL=https://webgate.ec.europa.eu/cas');
-        $this->line('   CAS_REDIRECT_LOGIN_URL=https://your-app.com/homepage');
-        $this->line('   CAS_MASQUERADE=your.email@example.com  # For development only');
+        $this->line('   CAS_REDIRECT_LOGIN_ROUTE=dashboard  # The name of your post-login route');
+        $this->line('   CAS_REDIRECT_LOGOUT_URL=https://your-app.com/');
         $this->line('');
-        $this->line('2. Add auth guard to config/auth.php:');
-        $this->line("   'guards' => ['laravel-cas' => ['driver' => 'laravel-cas', 'provider' => 'laravel-cas']]");
-        $this->line("   'providers' => ['laravel-cas' => ['driver' => 'laravel-cas']]");
-        $this->line('');
-        $this->line('3. Use cas.auth middleware to protect routes:');
-        $this->line("   Route::get('/protected', function() {...})->middleware('cas.auth');");
-        $this->line('');
-        $this->line('4. Frontend tools like Ziggy will now detect the CAS routes!');
+        $this->line('2. Add the auth guard to config/auth.php (if not already present).');
+        $this->line('3. Use the `cas.auth` middleware to protect your routes.');
+        $this->line('4. Ensure your CAS server whitelists the callback URL: https://your-app.com/cas/callback');
     }
 }

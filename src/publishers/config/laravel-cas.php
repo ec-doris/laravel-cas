@@ -34,13 +34,24 @@ return [
     
     /*
     |--------------------------------------------------------------------------
-    | Redirect Configuration
+    | CAS Redirect Route
     |--------------------------------------------------------------------------
     |
-    | Configure where users are redirected after login/logout.
+    | The name of the Laravel route to redirect to after a successful login.
+    | This is typically a dashboard or user profile page.
     |
     */
-    'redirect_login_route' => env('CAS_REDIRECT_LOGIN_ROUTE', 'laravel-cas-homepage'),
+    'redirect_login_route' => env('CAS_REDIRECT_LOGIN_ROUTE', 'dashboard'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | CAS Redirect Logout URL
+    |--------------------------------------------------------------------------
+    |
+    | The URL to redirect to after the user logs out.
+    |
+    */
+    'redirect_logout_url' => env('CAS_REDIRECT_LOGOUT_URL'),
     
     /*
     |--------------------------------------------------------------------------
@@ -84,9 +95,7 @@ return [
                 'renew',
                 'gateway',
             ],
-            'default_parameters' => [
-                'service' => env('CAS_REDIRECT_LOGIN_URL', 'http://localhost/login'),
-            ],
+            'default_parameters' => [],
         ],
         'serviceValidate' => [
             'path' => '/p3/serviceValidate',
@@ -99,7 +108,6 @@ return [
             'default_parameters' => [
                 'format' => 'JSON',
                 'groups' => true,
-                'service' => env('CAS_REDIRECT_LOGIN_URL', 'http://localhost/login'),
                 // 'pgtUrl' => env('CAS_PROXY_CALLBACK_URL', url('/proxy/callback')),
             ],
         ],

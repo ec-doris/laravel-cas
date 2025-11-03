@@ -48,19 +48,23 @@ class CasAuthenticator
             return $next($request);
         }
 
-        /** @var ServiceValidate $response */
-        $response = $this->cas->requestTicketValidation($this->serverRequest);
-
-        auth('laravel-cas')->attempt($response->getCredentials());
-
-        // Try to redirect to configured route, fallback to homepage or dashboard
-        $redirectRoute = config('laravel-cas.redirect_login_route', 'laravel-cas-homepage');
-        
         try {
-            return redirect(route($redirectRoute));
-        } catch (\Symfony\Component\Routing\Exception\RouteNotFoundException $e) {
-            // Fallback to URL if route doesn't exist
-            return redirect('/homepage');
+            /** @var ServiceValidate $response */
+            $response = $this->cas->requestTicketValidation($this->serverRequest);
+
+            auth('laravel-cas')->attempt($response->getCredentials());
+
+            // Try to redirect to configured route, fallback to dashboard
+            $redirectRoute = config('laravel-cas.redirect_login_route', 'dashboard');
+            
+            try {
+                return redirect(route($redirectRoute));
+            } catch (\Symfony\Component\Routing\Exception\RouteNotFoundException $e) {
+                // Fallback to URL if route doesn't exist
+                return redirect('/' . $redirectRoute);
+            }
+        } catch (\Exception $e) {
+            return new \Illuminate\Http\Response('<h1>Authentication Error</h1><p>Sorry, we were unable to authenticate you at this time. Please try again later.</p>', 500);
         }
     }
 

@@ -35,14 +35,7 @@ After installing the package, follow these steps for immediate functionality:
 2. **Update your `.env` file**:
    ```env
    CAS_URL=https://webgate.ec.europa.eu/cas
-   
-   # The full URL where CAS sends the user back to (e.g., your homepage).
-   CAS_REDIRECT_LOGIN_URL=https://your-app.com/
-
-   # The named route to redirect to after a successful login (e.g., a dashboard).
    CAS_REDIRECT_LOGIN_ROUTE=dashboard
-
-   # Where to go after logging out
    CAS_REDIRECT_LOGOUT_URL=https://your-app.com/
    ```
 
@@ -109,57 +102,33 @@ require __DIR__ . '/laravel-cas.php';
 
 ## Basic Configuration
 
-Create a `.env` file with your CAS settings. The login process involves two key redirects, which are configured with separate variables.
+This package is designed to work with minimal configuration.
 
-### Step 1: Redirect to CAS and back (`CAS_REDIRECT_LOGIN_URL`)
-
-When a user tries to access a protected page, they are first sent to the CAS server to log in. You must tell the CAS server where to send them back *to*. This is done with `CAS_REDIRECT_LOGIN_URL`.
-
-- **What it is**: The absolute URL of a publicly accessible page in your application where the CAS middleware can process the ticket. To avoid potential redirect loops, this should **not** be a route that is protected by the `cas.auth` middleware itself.
-- **What it should be**: A simple, unprotected URL like your homepage. For example: `https://your-app.com/`
-
-### Step 2: Redirect after successful login (`CAS_REDIRECT_LOGIN_ROUTE`)
-
-After the CAS server sends the user back to your application (e.g., to your homepage with a `ticket` parameter), the middleware validates their ticket. Once validated, the middleware needs to know where to send the authenticated user. This is an internal redirect to a named Laravel route.
-
-- **What it is**: The **name** of a Laravel route within your application, typically a user-specific page.
-- **What it should be**: `dashboard`, `user.profile`, or whatever your post-login landing page is named.
-
-### Example `.env` Configuration
+Your `.env` file only needs a few variables to get started:
 
 ```env
-# Required - The URL of your CAS Server
+# Required - The base URL of your CAS Server
 CAS_URL=https://webgate.ec.europa.eu/cas
-
-# --------------------------------------------------------------------------
-# Login Redirects - Explained Above
-# --------------------------------------------------------------------------
-
-# Required - The full URL where the CAS server will redirect the user back to.
-# This should be a publicly accessible page like your homepage.
-CAS_REDIRECT_LOGIN_URL=https://your-app.com/
 
 # Required - The name of the Laravel route to redirect to after a successful login.
 # This is typically a dashboard or user profile page.
 CAS_REDIRECT_LOGIN_ROUTE=dashboard
 
-# --------------------------------------------------------------------------
-# Other Settings
-# --------------------------------------------------------------------------
-
-# Required - Where to redirect after the user logs out.
+# Required - The URL to redirect to after the user logs out.
 CAS_REDIRECT_LOGOUT_URL=https://your-app.com/
 
 # Optional - For development only! Bypasses CAS and logs in the specified user.
 CAS_MASQUERADE=your.email@example.com
-
-# Optional - For development only! Enables a demo login form.
-CAS_DEMO_MODE=false
-CAS_DEMO_LOGIN_URL=https://demo-eulogin.cnect.eu
-
-# Optional - Enables CAS debug logging.
-CAS_DEBUG=false
 ```
+
+### How it Works
+
+The package now uses a hardcoded internal callback route (`/cas/callback`) to handle the communication with the CAS server. You no longer need to configure a callback URL.
+
+1.  When a user accesses a protected route, they are redirected to the CAS server.
+2.  The package tells the CAS server to send the user back to `https://your-app.com/cas/callback`.
+3.  The middleware validates the ticket at this callback URL.
+4.  After successful validation, the user is redirected to the route you specified in `CAS_REDIRECT_LOGIN_ROUTE`.
 
 ## Authentication Guard Setup
 
@@ -225,10 +194,10 @@ CAS_AUTO_REGISTER_MIDDLEWARE=false
 
 After publishing routes, you'll have access to:
 
-- `/login` - CAS login endpoint (named: laravel-cas-login)
-- `/logout` - CAS logout endpoint (name: laravel-cas-logout) 
-- `/homepage` - Post-login homepage 
-- `/proxy/callback` - CAS proxy callback
+- `/login` - CAS login endpoint (named: `laravel-cas-login`)
+- `/logout` - CAS logout endpoint (name: `laravel-cas-logout`)
+- `/cas/callback` - Internal CAS callback route (name: `laravel-cas-callback`)
+- `/proxy/callback` - CAS proxy callback (name: `laravel-cas-proxy-callback`)
 
 These routes are now:
 - ✅ Discoverable by frontend tools (Ziggy, Laravel Echo, etc.)

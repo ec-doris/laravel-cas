@@ -53,10 +53,9 @@ class LoginController extends Controller
             }
         }
 
-        $parameters = $request->query->all() + [
-            'renew' => null !== auth()->guard()->user(),
-        ];
+        $casUrl = config('laravel-cas.cas_url');
+        $serviceUrl = route('laravel-cas-callback');
 
-        return $cas->login($serverRequest->withQueryParams($parameters));
+        return new RedirectResponse(sprintf('%s/login?service=%s', $casUrl, $serviceUrl));
     }
 }

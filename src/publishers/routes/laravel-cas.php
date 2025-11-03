@@ -11,39 +11,32 @@
 
 declare(strict_types=1);
 
-use EcDoris\LaravelCas\Controllers\HomepageController;
+use EcDoris\LaravelCas\Controllers\CasCallbackController;
 use EcDoris\LaravelCas\Controllers\LoginController;
 use EcDoris\LaravelCas\Controllers\LogoutController;
 use EcDoris\LaravelCas\Controllers\ProxyCallbackController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Laravel CAS Routes
-|--------------------------------------------------------------------------
-|
-| These routes handle CAS authentication for your application. You can
-| customize these routes as needed. The routes are automatically 
-| registered with the 'web' middleware group.
-|
-*/
+Route::group(['middleware' => ['web']], static function () {
+    Route::get(
+        '/login',
+        LoginController::class
+    )->name('laravel-cas-login');
 
-Route::middleware(['web'])->group(function () {
-    // CAS Homepage - Default redirect after successful login
-    Route::get('/homepage', HomepageController::class)
-        ->name('laravel-cas-homepage');
+    Route::get(
+        '/logout',
+        LogoutController::class
+    )->name('laravel-cas-logout');
 
-    // CAS Login - Initiates CAS authentication
-    Route::get('/login', LoginController::class)
-        ->name('laravel-cas-login');
+    Route::get(
+        '/cas/callback',
+        CasCallbackController::class
+    )->name('laravel-cas-callback')->middleware('cas.auth');
 
-    // CAS Logout - Handles CAS logout
-    Route::get('/logout', LogoutController::class)
-        ->name('laravel-cas-logout');
-
-    // CAS Proxy Callback - For proxy ticket validation
-    Route::get('/proxy/callback', ProxyCallbackController::class)
-        ->name('laravel-cas-proxy-callback');
+    Route::get(
+        '/proxy/callback',
+        ProxyCallbackController::class
+    )->name('laravel-cas-proxy-callback');
 });
 
 /*
