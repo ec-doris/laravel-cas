@@ -31,7 +31,7 @@ class LoginController extends Controller
         }
 
         if (strtolower((string) config('app.env')) !== 'production' && config('laravel-cas.demo_mode')) {
-            $returnUrl = config('laravel-cas.protocol.login.default_parameters.service');
+            $returnUrl = route('laravel-cas-callback', [], true);
             $demoLoginUrl = config('laravel-cas.demo_login_url', 'https://demo-eulogin.cnect.eu');
             
             return redirect($demoLoginUrl . '?returnto=' . urlencode($returnUrl));
