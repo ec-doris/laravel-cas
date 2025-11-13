@@ -32,6 +32,6 @@ class LoginControllerTest extends TestCase
 
     public function testIfRedirectUri()
     {
-        $this->response->assertRedirect('http://localhost/login?service=http://localhost/cas/callback');
+        $this->response->assertRedirect('https://webgate.ec.europa.eu/cas/login?service=http://localhost/cas/callback');
     }
 }

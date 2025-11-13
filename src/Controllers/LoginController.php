@@ -53,7 +53,7 @@ class LoginController extends Controller
             }
         }
 
-        $casUrl = config('laravel-cas.cas_url');
+        $casUrl = config('laravel-cas.base_url');
         $serviceUrl = route('laravel-cas-callback');
 
         return redirect(sprintf('%s/login?service=%s', $casUrl, $serviceUrl));
