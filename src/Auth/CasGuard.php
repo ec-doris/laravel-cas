@@ -46,7 +46,11 @@ class CasGuard implements AuthGuard
         $password = 'xxx-xxx-xxx-xxx';
         $name = 'Cas Masquerade';
         $email = config('laravel-cas.masquerade');
-        $laravelUser = User::where('email', $email)->first();
+        
+        // Normalize email to lowercase for case-insensitive matching
+        $email = strtolower($email);
+        
+        $laravelUser = User::whereRaw('LOWER(email) = ?', [$email])->first();
 
         if ($laravelUser) {
             $this->setUser($laravelUser);

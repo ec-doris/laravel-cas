@@ -53,6 +53,9 @@ class CasUserProvider implements UserProvider
             return null;
         }
         
+        // Normalize email to lowercase for case-insensitive matching
+        $email = strtolower($email);
+        
         $password = 'xxx-xxx-xxx-xxx';
         $name = ($credentials['attributes']['firstName'].' '.$credentials['attributes']['lastName']) ?? '';
         $name = ucwords(strtolower($name));
@@ -77,8 +80,8 @@ class CasUserProvider implements UserProvider
             }
         }
 
-        // Find existing user or create new one
-        $laravelUser = User::where('email', $email)->first();
+        // Find existing user or create new one (case-insensitive email match)
+        $laravelUser = User::whereRaw('LOWER(email) = ?', [$email])->first();
 
         if ($laravelUser) {
             // User exists - use it

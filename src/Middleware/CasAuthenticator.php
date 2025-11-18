@@ -88,10 +88,13 @@ class CasAuthenticator
         $lastName = $data['lastName'] ?? 'User';
         $departmentNumber = $data['departmentNumber'] ?? null;
         
+        // Normalize email to lowercase for case-insensitive matching
+        $email = strtolower($email);
+        
         $name = trim($firstName . ' ' . $lastName);
         $name = ucwords(strtolower($name));
 
-        $user = User::where('email', $email)->first();
+        $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
 
         if ($user) {
             auth('laravel-cas')->setUser($user);
