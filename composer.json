@@ -40,9 +40,6 @@
         "orchestra/testbench": "^8.26 || ^9.4 || ^10.0 || ^11.0@dev",
         "roave/security-advisories": "dev-latest"
     },
-    "suggest": {
-        "symfony/psr-http-message-bridge": "To bridge between Laravel and PSR HTTP Message"
-    },
     "autoload": {
         "psr-4": {
             "EcDoris\\LaravelCas\\": "src/"

@@ -55,7 +55,7 @@ return [
     
     /*
     |--------------------------------------------------------------------------
-    | Development & Debug Settings
+    | Development Settings
     |--------------------------------------------------------------------------
     |
     | Settings for development and debugging. NEVER use in production!
@@ -64,8 +64,6 @@ return [
     'masquerade' => env('CAS_MASQUERADE', null),
     'demo_mode' => env('CAS_DEMO_MODE', false),
     'demo_login_url' => env('CAS_DEMO_LOGIN_URL', 'https://demo-eulogin.cnect.eu'),
-    'debug' => env('CAS_DEBUG', false),
-    'verbose_errors' => env('CAS_VERBOSE_ERRORS', false),
     
     /*
     |--------------------------------------------------------------------------

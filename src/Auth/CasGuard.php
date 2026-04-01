@@ -11,14 +11,17 @@ declare(strict_types=1);
 
 namespace EcDoris\LaravelCas\Auth;
 
-use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard as AuthGuard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Session\Session;
-use Illuminate\Http\Request;
+use RuntimeException;
 
+use function is_string;
+use function sha1;
 use function sprintf;
+use function strtolower;
+use function trim;
 
 class CasGuard implements AuthGuard
 {
@@ -29,51 +32,46 @@ class CasGuard implements AuthGuard
     private ?Authenticatable $user = null;
 
     public function __construct(
-        private ?UserProvider $provider,
-        private Request $request,
+        private UserProvider $provider,
         private Session $session
     ) {}
 
     /**
-     * Handle masquerading for development environments
+     * Handle masquerading for development environments.
      */
-    public function masquerade()
+    public function masquerade(): Authenticatable
     {
         if (strtolower((string) config('app.env')) === 'production' && config('laravel-cas.masquerade')) {
-            throw new \Exception('Masquerade cannot be used in a production environment.');
+            throw new RuntimeException('Masquerade cannot be used in a production environment.');
         }
 
-        $password = 'xxx-xxx-xxx-xxx';
-        $name = 'Cas Masquerade';
         $email = config('laravel-cas.masquerade');
-        
-        // Normalize email to lowercase for case-insensitive matching
-        $email = strtolower($email);
-        
-        $laravelUser = User::whereRaw('LOWER(email) = ?', [$email])->first();
 
-        if ($laravelUser) {
-            $this->setUser($laravelUser);
-            return $laravelUser;
+        if (!is_string($email) || trim($email) === '') {
+            throw new RuntimeException('Masquerade requires a valid email address.');
         }
 
-        $attributes = [
-            'email' => $email,
-            'name' => $name,
-            'password' => $password,
-        ];
+        $user = $this->attempt([
+            'user' => $email,
+            'attributes' => [
+                'email' => $email,
+                'firstName' => 'Cas',
+                'lastName' => 'Masquerade',
+            ],
+        ]);
 
-        $laravelUser = User::create($attributes);
-        $this->setUser($laravelUser);
+        if (!$user instanceof Authenticatable) {
+            throw new RuntimeException('Unable to masquerade as the configured user.');
+        }
 
-        return $laravelUser;
+        return $user;
     }
 
     public function attempt(array $credentials): ?Authenticatable
     {
         $user = $this->provider->retrieveByCredentials($credentials);
 
-        if ($user === null) {
+        if (!$user instanceof Authenticatable) {
             return null;
         }
 
@@ -82,7 +80,7 @@ class CasGuard implements AuthGuard
         return $user;
     }
 
-    public function check()
+    public function check(): bool
     {
         return $this->user() !== null;
     }
@@ -92,32 +90,29 @@ class CasGuard implements AuthGuard
         return null;
     }
 
-    public function getName()
+    public function getName(): string
     {
         return sprintf('login_%s_%s', $this->name, sha1(self::class));
     }
 
-    public function guest()
+    public function guest(): bool
     {
-        return ! $this->check();
+        return !$this->check();
     }
 
-    public function hasUser()
+    public function hasUser(): bool
     {
-        return ($this->user() !== null) ? true : false;
+        return $this->user() !== null;
     }
 
     public function id()
     {
-        if ($this->loggedOut || ! $this->hasUser()) {
-            return null;
-        }
-
         $user = $this->user();
+
         return $user ? $user->getAuthIdentifier() : null;
     }
 
-    public function logout()
+    public function logout(): void
     {
         $this->user = null;
         $this->loggedOut = true;
@@ -129,8 +124,10 @@ class CasGuard implements AuthGuard
     {
         $this->user = $user;
         $this->loggedOut = false;
-        $this->session->put($this->getName(), $user);
+        $this->session->put($this->getName(), $user->getAuthIdentifier());
         $this->session->migrate(true);
+
+        return $this;
     }
 
     public function user()
@@ -139,15 +136,24 @@ class CasGuard implements AuthGuard
             return null;
         }
 
-        return $this->provider->retrieveCasUser();
-    }
-
-    public function validate(array $credentials = [])
-    {
-        if ($credentials === []) {
-            return false;
+        if ($this->user instanceof Authenticatable) {
+            return $this->user;
         }
 
-        return true;
+        $identifier = $this->session->get($this->getName());
+
+        if ($identifier === null) {
+            return null;
+        }
+
+        $user = $this->provider->retrieveById($identifier);
+        $this->user = $user instanceof Authenticatable ? $user : null;
+
+        return $this->user;
+    }
+
+    public function validate(array $credentials = []): bool
+    {
+        return $credentials !== [];
     }
 }

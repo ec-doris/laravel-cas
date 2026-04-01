@@ -11,31 +11,20 @@ declare(strict_types=1);
 
 namespace EcDoris\LaravelCas\Config;
 
-use ArrayAccess;
 use EcPhp\CasLib\Configuration\Properties as PsrCasConfiguration;
 use EcPhp\CasLib\Contract\Configuration\PropertiesInterface;
-use Illuminate\Routing\Router;
-use Illuminate\Routing\Router as RouterInterface;
-use ReturnTypeWillChange;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 use const FILTER_VALIDATE_URL;
 
-class Laravel implements PropertiesInterface, ArrayAccess
+class Laravel implements PropertiesInterface
 {
     private PropertiesInterface $cas;
 
-    private RouterInterface $router;
-
-    public function __construct(
-        ParameterBag $parameterBag,
-        Router $router
-    ) {
-        $this->router = $router;
+    public function __construct(ParameterBag $parameterBag)
+    {
         $this->cas = new PsrCasConfiguration(
-            $this->routeToUrl(
-                $parameterBag->all()
-            )
+            $this->routeToUrl($parameterBag->all())
         );
     }
 
@@ -44,72 +33,23 @@ class Laravel implements PropertiesInterface, ArrayAccess
         return $this->cas->jsonSerialize();
     }
 
-    /**
-     * @param mixed $offset
-     */
-    #[ReturnTypeWillChange]
-    public function offsetExists($offset): bool
-    {
-        $properties = $this->cas->jsonSerialize();
-        return isset($properties[$offset]);
-    }
-
-    /**
-     * @param mixed $offset
-     *
-     * @return array<string, mixed>|mixed
-     */
-    #[ReturnTypeWillChange]
-    public function offsetGet($offset)
-    {
-        $properties = $this->cas->jsonSerialize();
-        return $properties[$offset] ?? null;
-    }
-
-    /**
-     * @param mixed $offset
-     * @param mixed $value
-     */
-    public function offsetSet($offset, $value): void
-    {
-        // Note: Properties class is immutable, so this is a no-op
-        // In a real implementation, you might want to store changes separately
-    }
-
-    /**
-     * @param mixed $offset
-     */
-    public function offsetUnset($offset): void
-    {
-        // Note: Properties class is immutable, so this is a no-op
-        // In a real implementation, you might want to store changes separately
-    }
-
     public function jsonSerialize(): array
     {
         return $this->cas->jsonSerialize();
     }
 
     /**
-     * Transform Symfony routes into absolute URLs.
+     * Transform configured route names into absolute URLs.
      *
      * @param array<string, mixed> $properties
-     *                                         The properties.
      *
      * @return array<string, mixed>
-     *                              The updated properties.
      */
     private function routeToUrl(array $properties): array
     {
-        $properties = $this->updateDefaultParameterRouteToUrl(
-            $properties,
-            'pgtUrl'
-        );
+        $properties = $this->updateDefaultParameterRouteToUrl($properties, 'pgtUrl');
 
-        return $this->updateDefaultParameterRouteToUrl(
-            $properties,
-            'service'
-        );
+        return $this->updateDefaultParameterRouteToUrl($properties, 'service');
     }
 
     /**
@@ -120,7 +60,7 @@ class Laravel implements PropertiesInterface, ArrayAccess
     private function updateDefaultParameterRouteToUrl(array $properties, string $key): array
     {
         foreach ($properties['protocol'] as $protocolKey => $protocol) {
-            if (false === isset($protocol['default_parameters'][$key])) {
+            if (!isset($protocol['default_parameters'][$key])) {
                 continue;
             }
 
@@ -128,11 +68,9 @@ class Laravel implements PropertiesInterface, ArrayAccess
 
             if (false === filter_var($route, FILTER_VALIDATE_URL)) {
                 try {
-                    // Try to generate route URL using Laravel's routing system
                     $route = route($route, [], true);
-                } catch (\Exception $e) {
-                    // If route doesn't exist, keep the original value
-                    // This maintains backward compatibility
+                } catch (\Exception) {
+                    // Keep the configured value if the route cannot be resolved.
                 }
 
                 $properties['protocol'][$protocolKey]['default_parameters'][$key] = $route;

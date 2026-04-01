@@ -7,7 +7,7 @@ namespace EcDoris\LaravelCas\Tests\Unit;
 use App\Models\User;
 use EcDoris\LaravelCas\Auth\CasUserProvider;
 use EcDoris\LaravelCas\Tests\TestCase;
-use Illuminate\Contracts\Session\Session;
+use EcDoris\LaravelCas\Tests\Models\ExternalUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 
@@ -31,6 +31,14 @@ class CasUserProviderTest extends TestCase
             $table->rememberToken();
             $table->timestamps();
         });
+
+        Schema::create('external_users', function ($table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->timestamps();
+        });
     }
 
     protected function getEnvironmentSetUp($app)
@@ -38,10 +46,9 @@ class CasUserProviderTest extends TestCase
         $app['config']->set('database.default', 'testing');
     }
 
-    private function getCasUserProvider(): CasUserProvider
+    private function getCasUserProvider(string $modelClass = User::class): CasUserProvider
     {
-        $session = $this->app->make(Session::class);
-        return new CasUserProvider($session);
+        return new CasUserProvider($modelClass);
     }
 
     public function test_it_creates_a_new_user_from_cas_credentials()
@@ -125,5 +132,35 @@ class CasUserProviderTest extends TestCase
             'department_number' => 'DPT123',
             'organisation' => 'DPT123',
         ]);
+    }
+
+    public function test_it_can_use_a_non_default_user_model()
+    {
+        $provider = $this->getCasUserProvider(ExternalUser::class);
+        $credentials = [
+            'attributes' => [
+                'email' => 'external.user@example.com',
+                'firstName' => 'External',
+                'lastName' => 'User',
+            ],
+        ];
+
+        $user = $provider->retrieveByCredentials($credentials);
+
+        $this->assertInstanceOf(ExternalUser::class, $user);
+        $this->assertDatabaseHas('external_users', [
+            'email' => 'external.user@example.com',
+        ]);
+    }
+
+    public function test_it_can_retrieve_users_by_id()
+    {
+        $user = User::factory()->create();
+        $provider = $this->getCasUserProvider();
+
+        $retrievedUser = $provider->retrieveById($user->id);
+
+        $this->assertInstanceOf(User::class, $retrievedUser);
+        $this->assertEquals($user->id, $retrievedUser->id);
     }
 }

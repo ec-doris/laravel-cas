@@ -11,7 +11,10 @@ declare(strict_types=1);
 
 namespace EcDoris\LaravelCas\Tests\Unit;
 
+use App\Models\User;
 use EcDoris\LaravelCas\Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * @internal
@@ -20,6 +23,8 @@ use EcDoris\LaravelCas\Tests\TestCase;
  */
 class LogoutControllerTest extends TestCase
 {
+    use RefreshDatabase;
+
     private $response;
 
     private $uri = 'logout';
@@ -28,7 +33,22 @@ class LogoutControllerTest extends TestCase
     {
         parent::setUp();
 
+        Schema::create('users', function ($table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+            $table->timestamps();
+        });
+
         $this->response = $this->get($this->uri);
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        $app['config']->set('database.default', 'testing');
     }
 
     public function testIfRedirectUri()
@@ -93,6 +113,17 @@ class LogoutControllerTest extends TestCase
         $response = $this->get($this->uri);
 
         // Should redirect to CAS logout URL in normal mode
+        $response->assertRedirect('https://webgate.ec.europa.eu/cas/logout?service=http%3A%2F%2Flocalhost');
+    }
+
+    public function testNormalModeLogsOutTheLaravelCasGuardBeforeRedirectingToCas()
+    {
+        $user = User::factory()->create();
+        auth('laravel-cas')->setUser($user);
+
+        $response = $this->get($this->uri);
+
+        $this->assertFalse(auth('laravel-cas')->check());
         $response->assertRedirect('https://webgate.ec.europa.eu/cas/logout?service=http%3A%2F%2Flocalhost');
     }
 }

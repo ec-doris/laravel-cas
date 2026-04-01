@@ -32,7 +32,17 @@ abstract class TestCase extends OrchestraTestCase
     protected function getPackageProviders($app)
     {
         $config = include dirname(__DIR__) . '/src/publishers/config/laravel-cas.php';
-        config(['laravel-cas' => $config]);
+        config([
+            'laravel-cas' => $config,
+            'auth.guards.laravel-cas' => [
+                'driver' => 'laravel-cas',
+                'provider' => 'laravel-cas',
+            ],
+            'auth.providers.laravel-cas' => [
+                'driver' => 'laravel-cas',
+                'model' => \App\Models\User::class,
+            ],
+        ]);
 
         return [
             AppServiceProvider::class,

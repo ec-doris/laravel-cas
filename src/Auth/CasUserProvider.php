@@ -11,112 +11,153 @@ declare(strict_types=1);
 
 namespace EcDoris\LaravelCas\Auth;
 
-use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
-use Illuminate\Contracts\Session\Session;
+use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
-use function array_key_exists;
+use function array_filter;
+use function class_exists;
+use function implode;
+use function is_string;
+use function sprintf;
+use function strtolower;
+use function trim;
+use function ucwords;
 
 class CasUserProvider implements UserProvider
 {
-    private string $guard_name = 'laravel-cas';
-
-    private Authenticatable $model;
-
     public function __construct(
-        private Session $session
+        private string $modelClass
     ) {}
 
-    public function getModel(): ?Authenticatable
-    {
-        return $this->model;
-    }
-
-    public function rehashPasswordIfRequired(Authenticatable $user, array $credentials, bool $force = false) {}
+    public function rehashPasswordIfRequired(Authenticatable $user, array $credentials, bool $force = false): void {}
 
     public function retrieveByCredentials(array $credentials): ?Authenticatable
     {
-
         if ($credentials === []) {
             return null;
         }
 
-        if (array_key_exists('user', $credentials) === false) {
+        $casAttributes = $credentials['attributes'] ?? null;
+
+        if (!is_array($casAttributes)) {
             return null;
         }
 
-        // Extract email/user info from CAS credentials
-        $email = $credentials['attributes']['email'] ?? null;
+        $email = $casAttributes['email'] ?? null;
 
-        if (! $email) {
+        if (!is_string($email) || $email === '') {
             return null;
         }
-        
-        // Normalize email to lowercase for case-insensitive matching
+
         $email = strtolower($email);
-        
-        $password = 'xxx-xxx-xxx-xxx';
-        $name = ($credentials['attributes']['firstName'].' '.$credentials['attributes']['lastName']) ?? '';
-        $name = ucwords(strtolower($name));
-        $departmentNumber = $credentials['attributes']['departmentNumber'] ?? null;
+        $existingUser = $this
+            ->newModelQuery()
+            ->whereRaw('LOWER(email) = ?', [$email])
+            ->first();
 
-        $attributes = [
-            'email' => $email,
-            'name' => $name,
-            'password' => $password,
-        ];
-
-        if ($departmentNumber) {
-            $userModel = new User();
-            if (in_array('departmentNumber', $userModel->getFillable()) || $userModel->getGuarded() === ['*'] || $userModel->getGuarded() === []) {
-                $attributes['departmentNumber'] = $departmentNumber;
-            }
-            if (in_array('department_number', $userModel->getFillable()) || $userModel->getGuarded() === ['*'] || $userModel->getGuarded() === []) {
-                $attributes['department_number'] = $departmentNumber;
-            }
-            if (in_array('organisation', $userModel->getFillable()) || $userModel->getGuarded() === ['*'] || $userModel->getGuarded() === []) {
-                $attributes['organisation'] = $departmentNumber;
-            }
+        if ($existingUser instanceof Authenticatable) {
+            return $existingUser;
         }
 
-        // Find existing user or create new one (case-insensitive email match)
-        $laravelUser = User::whereRaw('LOWER(email) = ?', [$email])->first();
+        $user = $this->newModelInstance();
+        $user->fill($this->buildAttributes($casAttributes, $email, $user));
+        $user->save();
 
-        if ($laravelUser) {
-            // User exists - use it
-            $this->model = $laravelUser;
-            return $this->model;
+        return $user;
+    }
+
+    public function retrieveById($identifier): ?Authenticatable
+    {
+        $user = $this->newModelQuery()->find($identifier);
+
+        return $user instanceof Authenticatable ? $user : null;
+    }
+
+    public function retrieveByToken($identifier, $token): ?Authenticatable
+    {
+        $user = $this->retrieveById($identifier);
+
+        if (!$user instanceof Authenticatable) {
+            return null;
         }
 
-        // Create new Laravel User
-        $laravelUser = User::create($attributes);
-        $this->model = $laravelUser;
-        return $this->model;
+        return $user->getRememberToken() === $token ? $user : null;
     }
 
-    public function retrieveById($identifier)
+    public function updateRememberToken(Authenticatable $user, $token): void
     {
-        return null;
+        if (!$user instanceof Model) {
+            return;
+        }
+
+        $user->setRememberToken($token);
+        $user->save();
     }
 
-    public function retrieveByToken($identifier, $token)
-    {
-        return null;
-    }
-
-    public function retrieveCasUser(): ?Authenticatable
-    {
-        // Replicate CasGuard::getName() logic to avoid circular dependency
-        $sessionKey = sprintf('login_%s_%s', $this->guard_name, sha1(\EcDoris\LaravelCas\Auth\CasGuard::class));
-
-        return $this->session->get($sessionKey);
-    }
-
-    public function updateRememberToken(Authenticatable $user, $token) {}
-
-    public function validateCredentials(Authenticatable $user, array $credentials)
+    public function validateCredentials(Authenticatable $user, array $credentials): bool
     {
         return true;
+    }
+
+    private function buildAttributes(array $casAttributes, string $email, Model $user): array
+    {
+        $attributes = [
+            'email' => $email,
+            'name' => $this->formatName(
+                $casAttributes['firstName'] ?? null,
+                $casAttributes['lastName'] ?? null,
+                $email
+            ),
+            'password' => 'xxx-xxx-xxx-xxx',
+        ];
+
+        $departmentNumber = $casAttributes['departmentNumber'] ?? null;
+
+        if (is_string($departmentNumber) && $departmentNumber !== '') {
+            foreach (['departmentNumber', 'department_number', 'organisation'] as $column) {
+                if ($user->isFillable($column)) {
+                    $attributes[$column] = $departmentNumber;
+                }
+            }
+        }
+
+        return $attributes;
+    }
+
+    private function formatName(mixed $firstName, mixed $lastName, string $fallback): string
+    {
+        $fullName = trim(implode(' ', array_filter([$firstName, $lastName], 'is_string')));
+
+        if ($fullName === '') {
+            return $fallback;
+        }
+
+        return ucwords(strtolower($fullName));
+    }
+
+    private function newModelInstance(): Model
+    {
+        if (!class_exists($this->modelClass)) {
+            throw new InvalidArgumentException(
+                sprintf('The configured CAS user model [%s] could not be found.', $this->modelClass)
+            );
+        }
+
+        $model = new $this->modelClass();
+
+        if (!$model instanceof Model || !$model instanceof Authenticatable) {
+            throw new InvalidArgumentException(
+                sprintf('The configured CAS user model [%s] must extend Eloquent Model and implement Authenticatable.', $this->modelClass)
+            );
+        }
+
+        return $model;
+    }
+
+    private function newModelQuery()
+    {
+        return $this->newModelInstance()->newQuery();
     }
 }

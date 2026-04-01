@@ -11,7 +11,6 @@ use EcDoris\LaravelCas\Tests\TestCase;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
 class CasGuardTest extends TestCase
@@ -40,11 +39,10 @@ class CasGuardTest extends TestCase
 
     private function getCasGuard(?UserProvider $provider = null): CasGuard
     {
-        $request = $this->app->make(Request::class);
         $session = $this->app->make(Session::class);
-        $provider = $provider ?? $this->app->make(CasUserProvider::class);
+        $provider = $provider ?? new CasUserProvider(User::class);
 
-        return new CasGuard($provider, $request, $session);
+        return new CasGuard($provider, $session);
     }
 
     public function test_it_can_masquerade_as_a_user_in_non_production()
@@ -100,9 +98,8 @@ class CasGuardTest extends TestCase
             ->with($credentials)
             ->willReturn($user);
 
-        // After a successful attempt, the guard will use retrieveCasUser to get the user
         $provider->expects($this->any())
-            ->method('retrieveCasUser')
+            ->method('retrieveById')
             ->willReturn($user);
 
         $guard = $this->getCasGuard($provider);
@@ -119,7 +116,7 @@ class CasGuardTest extends TestCase
         $loggedIn = false;
 
         $provider = $this->createMock(CasUserProvider::class);
-        $provider->method('retrieveCasUser')
+        $provider->method('retrieveById')
             ->willReturnCallback(function () use (&$loggedIn, $user) {
                 return $loggedIn ? $user : null;
             });
@@ -141,5 +138,18 @@ class CasGuardTest extends TestCase
         $this->assertTrue($guard->check());
         $this->assertTrue($guard->hasUser());
         $this->assertEquals($user->id, $guard->id());
+    }
+
+    public function test_it_restores_the_authenticated_user_from_session()
+    {
+        $user = User::factory()->create();
+        $guard = $this->getCasGuard();
+
+        $guard->setUser($user);
+
+        $restoredGuard = $this->getCasGuard();
+
+        $this->assertInstanceOf(User::class, $restoredGuard->user());
+        $this->assertEquals($user->id, $restoredGuard->id());
     }
 }

@@ -33,23 +33,20 @@ use GuzzleHttp\Client;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
 use loophp\psr17\Psr17;
 use loophp\psr17\Psr17Interface;
 use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
-use function class_exists;
 use function dirname;
+use function is_string;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         // Publish configuration files (optional for customization)
         $this->publishes(
@@ -89,7 +86,7 @@ class AppServiceProvider extends ServiceProvider
         }
     }
 
-    public function register()
+    public function register(): void
     {
         // Merge default configuration
         $this->mergeConfigFrom(
@@ -120,12 +117,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Fallback: Auto-load routes if not published (for backward compatibility)
         if (config('laravel-cas.auto_load_routes', true)) {
-            $router = $this->app['router'];
-            
-            $router->group(
-                ['namespace' => 'EcDoris\LaravelCas\Controllers'],
-                static fn () => require dirname(__DIR__) . '/Config/routes.php'
-            );
+            $this->loadRoutesFrom(dirname(__DIR__) . '/Config/routes.php');
         }
     }
 
@@ -136,16 +128,25 @@ class AppServiceProvider extends ServiceProvider
     {
         Auth::provider(
             'laravel-cas',
-            static fn (): UserProvider => new CasUserProvider(app('session.store'))
+            static fn (Application $app, array $config): UserProvider => new CasUserProvider(
+                self::resolveUserModelClass($config)
+            )
         );
         
         Auth::extend(
             'laravel-cas',
-            static fn (Application $app, string $name, array $config): Guard => new CasGuard(
-                new CasUserProvider(app('session.store')), 
-                $app->make('request'), 
-                app('session.store')
-            )
+            static function (Application $app, string $name, array $config): Guard {
+                $provider = Auth::createUserProvider($config['provider'] ?? 'laravel-cas');
+
+                if (!$provider instanceof UserProvider) {
+                    throw new InvalidArgumentException('The laravel-cas guard requires a valid auth provider.');
+                }
+
+                return new CasGuard(
+                    $provider,
+                    $app->make('session.store')
+                );
+            }
         );
     }
 
@@ -195,19 +196,6 @@ class AppServiceProvider extends ServiceProvider
                 }
             );
         }
-
-        // Auto-bind PSR ServerRequest conversion
-        if (!$this->app->bound(ServerRequestInterface::class)) {
-            $this->app->bind(
-                ServerRequestInterface::class,
-                static function (Application $app): ServerRequestInterface {
-                    $psr17Factory = new \Nyholm\Psr7\Factory\Psr17Factory();
-                    $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
-                    
-                    return $psrHttpFactory->createRequest($app->make('request'));
-                }
-            );
-        }
     }
 
     /**
@@ -218,8 +206,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             PropertiesInterface::class,
             static fn (Application $app): PropertiesInterface => new Laravel(
-                new ParameterBag((array) config('laravel-cas')),
-                $app['router']
+                new ParameterBag((array) config('laravel-cas'))
             )
         );
         
@@ -252,5 +239,18 @@ class AppServiceProvider extends ServiceProvider
             ProxyFailureFactoryInterface::class,
             static fn (Application $app): ProxyFailureFactory => $app->make(ProxyFailureFactory::class)
         );
+    }
+
+    private static function resolveUserModelClass(array $config): string
+    {
+        $model = $config['model'] ?? config('auth.providers.users.model');
+
+        if (!is_string($model) || $model === '') {
+            throw new InvalidArgumentException(
+                'The laravel-cas auth provider requires a model class. Configure auth.providers.laravel-cas.model or auth.providers.users.model.'
+            );
+        }
+
+        return $model;
     }
 }
