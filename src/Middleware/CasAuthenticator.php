@@ -136,7 +136,6 @@ class CasAuthenticator
         return $request->routeIs(
             'laravel-cas-login',
             'laravel-cas-logout',
-            'laravel-cas-callback',
             'laravel-cas-proxy-callback'
         );
     }
