@@ -352,5 +352,51 @@ For development or contributing to this package:
 git clone https://github.com/ec-doris/laravel-cas.git
 cd laravel-cas
 composer install
-./vendor/bin/phpunit
+composer verify
 ```
+
+### Local E2E Harness
+
+The repository now includes a local Workbench app, a deterministic CAS protocol stub, and Playwright browser tests so package changes can be exercised without pulling the branch into a separate Laravel application.
+
+Install and run the browser harness:
+
+```shell
+composer verify
+```
+
+`composer verify` is the one-command local validation loop. It will:
+
+1. Install npm dependencies if `node_modules` is missing
+2. Install the local Playwright Chromium browser if it is missing
+3. Run the PHPUnit suite
+4. Run the Playwright end-to-end suite
+
+What this covers:
+
+1. Guest access to a protected Workbench route redirects through `/login`
+2. `/login` redirects to a local CAS server
+3. The CAS server issues a real service ticket and redirects to `/cas/callback`
+4. The package validates the ticket, authenticates the user, persists mapped attributes, and redirects to the dashboard
+5. `/logout` clears the session and round-trips through CAS logout back to the Workbench app
+
+Useful local commands:
+
+```shell
+composer verify
+composer serve
+npm run cas:stub
+curl -i http://127.0.0.1:8001/login
+curl -i http://127.0.0.1:9800/cas/__health
+```
+
+Local CAS stub credentials:
+
+```text
+username: casuser
+password: Mellon
+```
+
+The Workbench dashboard exposes `departmentNumber`, `department_number`, and `organisation` so the attribute-mapping behavior is visible during development.
+
+The GitHub Actions workflow runs the same verification flow on pushes and pull requests, so local and CI coverage stay aligned.

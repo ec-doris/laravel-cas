@@ -73,7 +73,9 @@ class CasAuthenticator
             }
 
             return $this->redirectAfterLogin();
-        } catch (\Exception) {
+        } catch (\Exception $exception) {
+            report($exception);
+
             return new Response(
                 '<h1>Authentication Error</h1><p>Sorry, we were unable to authenticate you at this time. Please try again later.</p>',
                 500

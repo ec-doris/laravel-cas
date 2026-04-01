@@ -49,7 +49,10 @@
         "psr-4": {
             "App\\": "tests/",
             "App\\Models\\Factories\\": "tests/Factories/",
-            "EcDoris\\LaravelCas\\Tests\\": "tests/"
+            "EcDoris\\LaravelCas\\Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
         }
     },
     "config": {
@@ -64,6 +67,26 @@
     },
     "scripts": {
         "phpunit": "vendor/bin/phpunit",
-        "test": "vendor/bin/phpunit"
+        "test": "vendor/bin/phpunit",
+        "verify": [
+            "Composer\\Config::disableProcessTimeout",
+            "bash ./scripts/verify.sh"
+        ],
+        "e2e": [
+            "Composer\\Config::disableProcessTimeout",
+            "npm run e2e"
+        ],
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve --ansi"
+        ]
     }
 }
