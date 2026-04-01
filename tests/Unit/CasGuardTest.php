@@ -98,8 +98,7 @@ class CasGuardTest extends TestCase
             ->with($credentials)
             ->willReturn($user);
 
-        $provider->expects($this->any())
-            ->method('retrieveById')
+        $provider->method('retrieveById')
             ->willReturn($user);
 
         $guard = $this->getCasGuard($provider);
@@ -115,7 +114,7 @@ class CasGuardTest extends TestCase
         $user = User::factory()->create();
         $loggedIn = false;
 
-        $provider = $this->createMock(CasUserProvider::class);
+        $provider = $this->createStub(CasUserProvider::class);
         $provider->method('retrieveById')
             ->willReturnCallback(function () use (&$loggedIn, $user) {
                 return $loggedIn ? $user : null;

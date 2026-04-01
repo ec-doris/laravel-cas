@@ -207,7 +207,10 @@ class InstallCasCommand extends Command
         $this->line('   CAS_REDIRECT_LOGOUT_URL=https://your-app.com/');
         $this->line('');
         $this->line('2. Add the auth guard to config/auth.php (if not already present).');
-        $this->line('3. Use the `cas.auth` middleware to protect your routes.');
-        $this->line('4. Ensure your CAS server whitelists the callback URL: https://your-app.com/cas/callback');
+        $this->line('3. Use the named `cas.auth` middleware only on routes that need CAS authentication.');
+        $this->line("4. Or keep Laravel's normal auth middleware and redirect guests to route('laravel-cas-login').");
+        $this->warn('Important: do not add EcDoris\\LaravelCas\\Middleware\\CasAuthenticator to the global web middleware group.');
+        $this->warn('That misconfiguration makes /login redirect back to itself and causes a login loop.');
+        $this->line('5. Ensure your CAS server whitelists the callback URL: https://your-app.com/cas/callback');
     }
 }

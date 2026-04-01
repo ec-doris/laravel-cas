@@ -17,6 +17,20 @@ use EcDoris\LaravelCas\Controllers\LogoutController;
 use EcDoris\LaravelCas\Controllers\ProxyCallbackController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Important middleware note
+|--------------------------------------------------------------------------
+|
+| Do not add EcDoris\LaravelCas\Middleware\CasAuthenticator to the global
+| web middleware group. That intercepts /login before LoginController runs
+| and redirects guests back to /login, causing a loop.
+|
+| Keep CasAuthenticator as named route middleware and apply `cas.auth`
+| only to the routes that should start or complete CAS authentication.
+|
+*/
+
 Route::group(['middleware' => ['web']], static function () {
     Route::get(
         '/login',
@@ -45,7 +59,17 @@ Route::group(['middleware' => ['web']], static function () {
 |--------------------------------------------------------------------------
 |
 | You can use the 'cas.auth' middleware to protect routes that require
-| CAS authentication. Uncomment and modify as needed:
+| CAS authentication. Uncomment and modify as needed.
+|
+| If you prefer Laravel's normal `auth` middleware, redirect guests to
+| route('laravel-cas-login') instead of adding CasAuthenticator to the
+| global web middleware group:
+|
+| ->withMiddleware(function (Middleware $middleware): void {
+|     $middleware->redirectGuestsTo(fn () => route('laravel-cas-login'));
+| });
+|
+| Route protection example:
 |
 | Route::middleware(['web', 'cas.auth'])->group(function () {
 |     Route::get('/dashboard', function () {

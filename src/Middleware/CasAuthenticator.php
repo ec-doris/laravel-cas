@@ -38,6 +38,10 @@ class CasAuthenticator
 
     public function handle(Request $request, Closure $next): mixed
     {
+        if ($this->shouldBypassPackageRoutes($request)) {
+            return $next($request);
+        }
+
         $guard = auth('laravel-cas');
 
         if ($guard->check()) {
@@ -125,5 +129,15 @@ class CasAuthenticator
         } catch (RouteNotFoundException) {
             return redirect()->guest('/login');
         }
+    }
+
+    private function shouldBypassPackageRoutes(Request $request): bool
+    {
+        return $request->routeIs(
+            'laravel-cas-login',
+            'laravel-cas-logout',
+            'laravel-cas-callback',
+            'laravel-cas-proxy-callback'
+        );
     }
 }

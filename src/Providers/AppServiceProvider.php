@@ -126,17 +126,43 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerAuthComponents(): void
     {
+        $resolveUserModelClass = static function (array $config): string {
+            $model = $config['model'] ?? config('auth.providers.users.model');
+
+            if (!is_string($model) || $model === '') {
+                throw new InvalidArgumentException(
+                    'The laravel-cas auth provider requires a model class. Configure auth.providers.laravel-cas.model or auth.providers.users.model.'
+                );
+            }
+
+            return $model;
+        };
+
+        $resolveGuardProviderName = static function (array $config): string {
+            $provider = $config['provider'] ?? 'laravel-cas';
+
+            if (!is_string($provider) || $provider === '') {
+                throw new InvalidArgumentException('The laravel-cas guard requires a valid auth provider.');
+            }
+
+            return $provider;
+        };
+
         Auth::provider(
             'laravel-cas',
-            static fn (Application $app, array $config): UserProvider => new CasUserProvider(
-                self::resolveUserModelClass($config)
-            )
+            function (Application $app, array $config) use ($resolveUserModelClass): UserProvider {
+                return new CasUserProvider(
+                    $resolveUserModelClass($config)
+                );
+            }
         );
         
         Auth::extend(
             'laravel-cas',
-            static function (Application $app, string $name, array $config): Guard {
-                $provider = Auth::createUserProvider($config['provider'] ?? 'laravel-cas');
+            function (Application $app, string $name, array $config) use ($resolveGuardProviderName): Guard {
+                $provider = $app->make('auth')->createUserProvider(
+                    $resolveGuardProviderName($config)
+                );
 
                 if (!$provider instanceof UserProvider) {
                     throw new InvalidArgumentException('The laravel-cas guard requires a valid auth provider.');
@@ -241,16 +267,4 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
-    private static function resolveUserModelClass(array $config): string
-    {
-        $model = $config['model'] ?? config('auth.providers.users.model');
-
-        if (!is_string($model) || $model === '') {
-            throw new InvalidArgumentException(
-                'The laravel-cas auth provider requires a model class. Configure auth.providers.laravel-cas.model or auth.providers.users.model.'
-            );
-        }
-
-        return $model;
-    }
 }

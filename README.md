@@ -62,6 +62,8 @@ After installing the package, follow these steps for immediate functionality:
    })->middleware('cas.auth');
    ```
 
+   Do **not** add `EcDoris\LaravelCas\Middleware\CasAuthenticator` to the global `web` middleware group. That intercepts `/login` before the package login controller runs and causes `/login` to redirect back to itself in a loop.
+
 5. **Test the flow**:
    - Visit `/login` to start CAS authentication.
    - After successful CAS authentication, you will be redirected to the route named in your `CAS_REDIRECT_LOGIN_ROUTE` variable (e.g., `/dashboard`).
@@ -163,6 +165,22 @@ Route::middleware(['cas.auth'])->group(function () {
     Route::get('/dashboard', 'DashboardController@index');
     Route::get('/profile', 'ProfileController@index');
 });
+```
+
+Do not add `EcDoris\LaravelCas\Middleware\CasAuthenticator` to the global `web` middleware group. If you do, `/login` is intercepted before `LoginController` runs, and guests are redirected back to `/login`, causing a self-redirect loop.
+
+Use one of these patterns instead:
+- Apply the named `cas.auth` middleware only to the routes or route groups that should require CAS authentication.
+- Keep Laravel's normal `auth` middleware and redirect guests to `route('laravel-cas-login')`.
+
+For Laravel 11+ apps, guest redirection can be configured in `bootstrap/app.php`:
+
+```php
+use Illuminate\Foundation\Configuration\Middleware;
+
+->withMiddleware(function (Middleware $middleware): void {
+    $middleware->redirectGuestsTo(fn () => route('laravel-cas-login'));
+})
 ```
 
 ## Advanced Configuration (Optional)
