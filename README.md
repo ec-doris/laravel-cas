@@ -1,36 +1,49 @@
 # Laravel CAS Bundle
 
-A CAS bundle for Laravel with automatic configuration for EU Login and EC applications.
+A Laravel CAS authentication bundle for EU Login and EC applications.
+
+The package provides:
+- package login, logout, callback, and proxy callback routes
+- a `laravel-cas` auth guard driver and provider driver
+- a `cas.auth` middleware alias for route protection
+- automatic user creation on first successful CAS login
+- optional `CAS_MASQUERADE` and `CAS_DEMO_MODE` flows for non-production environments
 
 ## Installation
 
-### One-Command Installation
+### Install from GitHub
 
-You can add the repository and install the package in two commands:
+If you are consuming the current branch directly from this repository:
 
 ```shell
 composer config repositories.laravel-cas vcs https://github.com/ec-doris/laravel-cas
 composer require ec-doris/laravel-cas:dev-main
 ```
 
-### Post-Installation
+### What the Package Wires Up
 
-That's it! The package will automatically:
-- Register CAS authentication guards and providers
-- Set up PSR HTTP client dependencies (GuzzleHTTP, Nyholm PSR-7, Symfony PSR Bridge)
-- Register routes and middleware (with fallback)
-- Configure EU Login defaults
+After installation, Laravel package discovery will:
+- register the package service provider
+- register the `laravel-cas` auth guard and provider drivers
+- register default PSR-18 / PSR-17 bindings when those interfaces are not already bound
+- register the `cas.auth` middleware alias unless disabled
+- load the built-in CAS routes as a fallback when you have not published them
 
-No additional dependencies or manual configuration required!
+You still need to:
+- configure your CAS environment variables
+- add a `laravel-cas` guard and provider entry to `config/auth.php`
+- protect your application routes with `cas.auth` or redirect guests to `route('laravel-cas-login')`
 
 ## Quick Setup Guide
 
-After installing the package, follow these steps for immediate functionality:
+After installing the package, follow these steps:
 
-1. **Publish CAS routes**:
+1. **Publish the package files** (recommended):
    ```shell
    php artisan cas:install --all
    ```
+
+   The package can run with its fallback internal routes if you do not publish them, but publishing is better when you want route discovery, route caching visibility, or customization.
 
 2. **Update your `.env` file**:
    ```env
@@ -50,21 +63,28 @@ After installing the package, follow these steps for immediate functionality:
    'providers' => [
        'laravel-cas' => [
            'driver' => 'laravel-cas',
+           'model' => App\Models\User::class,
        ],
    ],
    ```
 
-4. **Protect your routes** by adding CAS middleware:
+4. **Protect your routes** with the named middleware:
    ```php
-   Route::get('/dashboard', function () {
-       $user = auth('laravel-cas')->user();
-       return view('dashboard', compact('user'));
-   })->middleware('cas.auth');
+   Route::middleware(['web', 'cas.auth'])->group(function () {
+       Route::get('/dashboard', function () {
+           $user = auth('laravel-cas')->user();
+
+           return view('dashboard', compact('user'));
+       })->name('dashboard');
+   });
    ```
 
    Do **not** add `EcDoris\LaravelCas\Middleware\CasAuthenticator` to the global `web` middleware group. That intercepts `/login` before the package login controller runs and causes `/login` to redirect back to itself in a loop.
 
-5. **Test the flow**:
+5. **Ensure your CAS server allows the callback URL**:
+   - `https://your-app.com/cas/callback`
+
+6. **Test the flow**:
    - Visit `/login` to start CAS authentication.
    - After successful CAS authentication, you will be redirected to the route named in your `CAS_REDIRECT_LOGIN_ROUTE` variable (e.g., `/dashboard`).
 
@@ -104,37 +124,36 @@ require __DIR__ . '/laravel-cas.php';
 
 ## Basic Configuration
 
-This package is designed to work with minimal configuration.
+This package is designed to work with a small configuration surface.
 
-Your `.env` file only needs a few variables to get started:
+A minimal `.env` looks like:
 
 ```env
-# Required - The base URL of your CAS Server
 CAS_URL=https://webgate.ec.europa.eu/cas
 
-# Required - The name of the Laravel route to redirect to after a successful login.
-# This is typically a dashboard or user profile page.
 CAS_REDIRECT_LOGIN_ROUTE=dashboard
 
-# Required - The URL to redirect to after the user logs out.
 CAS_REDIRECT_LOGOUT_URL=https://your-app.com/
-
-# Optional - For development only! Bypasses CAS and logs in the specified user.
-CAS_MASQUERADE=your.email@example.com
 ```
+
+Notes:
+- `CAS_URL` defaults to `https://webgate.ec.europa.eu/cas`
+- `CAS_REDIRECT_LOGIN_ROUTE` defaults to `dashboard`; if that route does not exist, post-login redirection falls back to `/`
+- `CAS_REDIRECT_LOGOUT_URL` should usually be set explicitly so CAS logout returns to a valid application URL
+- `CAS_MASQUERADE`, `CAS_DEMO_MODE`, and `CAS_DEMO_LOGIN_URL` are development-only settings and should not be enabled in production
 
 ### How it Works
 
-The package now uses a hardcoded internal callback route (`/cas/callback`) to handle the communication with the CAS server. You no longer need to configure a callback URL.
+The package uses a fixed internal callback route, `/cas/callback`, to handle ticket validation. You do not need to configure a separate callback route name.
 
 1.  When a user accesses a protected route, they are redirected to the CAS server.
 2.  The package tells the CAS server to send the user back to `https://your-app.com/cas/callback`.
-3.  The middleware validates the ticket at this callback URL.
+3.  The `cas.auth` middleware on `/cas/callback` validates the returned CAS ticket.
 4.  After successful validation, the user is redirected to the route you specified in `CAS_REDIRECT_LOGIN_ROUTE`.
 
 ## Authentication Guard Setup
 
-Add to your `config/auth.php`:
+The package registers the `laravel-cas` guard and provider drivers, but your application still needs to define a guard and provider entry in `config/auth.php`:
 
 ```php
 'guards' => [
@@ -147,9 +166,12 @@ Add to your `config/auth.php`:
 'providers' => [
     'laravel-cas' => [
         'driver' => 'laravel-cas',
+        'model' => App\Models\User::class,
     ],
 ],
 ```
+
+If `auth.providers.users.model` already points at the correct model, the explicit `model` key can be omitted.
 
 ## Middleware Usage
 
@@ -189,7 +211,6 @@ To customize the configuration, publish the config files:
 
 ```shell
 php artisan vendor:publish --tag=laravel-cas-config
-# or use the install command
 php artisan cas:install --config
 ```
 
@@ -201,12 +222,13 @@ This will publish:
 You can control how routes are loaded:
 
 ```env
-# Disable auto-loading of routes (when published)
 CAS_AUTO_LOAD_ROUTES=false
-
-# Disable auto-middleware registration
 CAS_AUTO_REGISTER_MIDDLEWARE=false
 ```
+
+Use these when:
+- `CAS_AUTO_LOAD_ROUTES=false`: you want to disable the fallback internal route loading and rely only on your published `routes/laravel-cas.php`
+- `CAS_AUTO_REGISTER_MIDDLEWARE=false`: you want to register the `cas.auth` alias yourself instead of letting the package do it
 
 ## Available Routes
 
@@ -222,6 +244,8 @@ These routes are now:
 - ✅ Customizable in your `routes/laravel-cas.php` file
 - ✅ Fully integrated with your application routing
 
+On the published route file, `/cas/callback` is registered with `cas.auth`. The controller itself is intentionally blank; the middleware performs the ticket validation and redirect.
+
 ## Frontend Integration
 
 Since routes are published to your routes directory, frontend tools will automatically detect them:
@@ -235,24 +259,20 @@ route('laravel-cas-logout') // Available!
 php artisan route:cache
 ```
 
-## EU/EC Institution Presets
+## EU Login Defaults
 
-The package includes presets for common EU institutions:
+The default `CAS_URL` already points to the European Commission CAS endpoint:
 
 ```php
 // In your .env file
 CAS_URL=https://webgate.ec.europa.eu/cas  # Default for EU institutions
 ```
 
-## Manual Configuration (For Advanced Users)
+If you publish `config/laravel-cas.php`, you will also see a `presets` array with reference values for common EU installations. That array is documentation/reference data; the package does not dynamically switch presets based on `CAS_INSTITUTION_CODE` or other env flags.
 
-If you need to disable auto-registration and provide your own PSR implementations:
+## Custom HTTP / PSR Bindings
 
-```env
-CAS_AUTO_REGISTER_MIDDLEWARE=false
-```
-
-Then manually configure in your `AppServiceProvider`:
+If you want to override the default PSR HTTP client or PSR-17 factory bindings, bind your own implementations in your application container:
 
 ```php
 use Psr\Http\Client\ClientInterface;
@@ -263,15 +283,13 @@ use loophp\psr17\Psr17;
 
 public function register(): void
 {
-    // Only needed if you want to use a different HTTP client
     $this->app->bind(
         ClientInterface::class,
         function(Application $app): ClientInterface {
-            return new Client(['timeout' => 30]); // Custom configuration
+            return new Client(['timeout' => 30]);
         }
     );
     
-    // Only needed if you want to use a different PSR-7 implementation
     $this->app->bind(
         Psr17Interface::class,
         function(Application $app): Psr17Interface {
@@ -289,16 +307,22 @@ public function register(): void
 }
 ```
 
-> **Note**: The package now automatically includes and configures GuzzleHTTP and Nyholm PSR-7 dependencies, so manual configuration is only needed for customization.
+The package only supplies its default bindings when these interfaces are not already bound.
 
 ## User Model
 
-The package uses `App\Models\User` for authentication. Ensure your user model has these attributes:
-- `email` (required)
-- `name` 
-- `organisation` (optional, for EU/EC applications)
-- `departmentNumber` (optional, for EU/EC applications)
-- `department_number` (optional, for EU/EC applications)
+The package uses the model configured on `auth.providers.laravel-cas.model`, or falls back to `auth.providers.users.model`.
+
+On first successful CAS login:
+- the user is looked up by email, case-insensitively
+- if no matching user exists, a new one is created
+- `name` is built from CAS `firstName` and `lastName`
+- if `departmentNumber`, `department_number`, or `organisation` are fillable on the model, CAS `departmentNumber` is copied into them
+
+Current behavior:
+- `email` is required in the CAS attributes for authentication to succeed
+- separate `firstName` and `lastName` columns are not persisted by the package
+- existing users are reused by email and are not resynchronized from CAS attributes on every login
 
 ## Development Modes
 
@@ -310,7 +334,7 @@ For local development without CAS server access, use masquerade mode to bypass a
 CAS_MASQUERADE=your.email@example.com
 ```
 
-When enabled (non-production only), visiting `/login` will automatically create/login the user with the specified email.
+When enabled in non-production, visiting `/login` will automatically create or authenticate the user with the specified email and redirect to the configured post-login route. Visiting `/logout` clears the local session and redirects without calling the upstream CAS logout endpoint.
 
 ### Demo Mode
 
@@ -321,10 +345,10 @@ CAS_DEMO_MODE=true
 CAS_DEMO_LOGIN_URL=https://demo-eulogin.cnect.eu
 ```
 
-When enabled (non-production only):
+When enabled in non-production:
 1. Visiting `/login` redirects to the demo login form with a `returnto` parameter
 2. The demo form collects user information and redirects back with a `ticket=DEMO_{json}` parameter
-3. The middleware decodes the ticket and creates/logs in the user
+3. The middleware decodes the demo ticket and creates or authenticates the user
 
 The demo ticket JSON payload should contain:
 - `email` (required)
@@ -344,22 +368,39 @@ If upgrading from an older version:
 4. Update your `.env` file with the new variable names
 5. Optionally publish and customize the new config files
 
-### Development Installation
+## Local Development
 
-For development or contributing to this package:
+For development or contribution work in this repository:
 
 ```shell
 git clone https://github.com/ec-doris/laravel-cas.git
 cd laravel-cas
 composer install
-composer verify
 ```
 
-### Local E2E Harness
+## Test Commands
 
-The repository now includes a local Workbench app, a deterministic CAS protocol stub, and Playwright browser tests so package changes can be exercised without pulling the branch into a separate Laravel application.
+Use these commands during package development:
 
-Install and run the browser harness:
+```shell
+composer verify
+vendor/bin/phpunit
+npm run e2e
+npm run e2e:debug
+npm run e2e:headed
+```
+
+Command summary:
+- `composer verify`: full local verification loop; installs npm dependencies and the local Playwright Chromium browser if they are missing, then runs PHPUnit and Playwright
+- `vendor/bin/phpunit`: PHPUnit suite only
+- `npm run e2e`: Playwright suite only
+- `npm run e2e:debug` / `npm run e2e:headed`: browser debugging variants
+
+## Local E2E Harness
+
+The repository includes a local Workbench app, a deterministic CAS protocol stub, and Playwright browser tests so package changes can be exercised without pulling the branch into a separate Laravel application.
+
+Run the full local verification loop:
 
 ```shell
 composer verify
@@ -377,15 +418,38 @@ What this covers:
 1. Guest access to a protected Workbench route redirects through `/login`
 2. `/login` redirects to a local CAS server
 3. The CAS server issues a real service ticket and redirects to `/cas/callback`
-4. The package validates the ticket, authenticates the user, persists mapped attributes, and redirects to the dashboard
+4. The package validates the ticket, creates the user if needed, authenticates the session, persists mapped attributes, and redirects to the dashboard
 5. `/logout` clears the session and round-trips through CAS logout back to the Workbench app
+
+Manual local loop:
+
+```shell
+npm install
+npm run e2e:install
+npm run cas:stub
+./scripts/e2e/serve-workbench.sh
+```
+
+Then, in another terminal:
+
+```shell
+npm run e2e
+```
+
+Or open:
+
+```text
+http://127.0.0.1:8001/dashboard
+```
+
+This harness uses a local CAS stub, not a real Apereo CAS or EU Login server. It is intended to exercise the package end to end inside this repository.
 
 Useful local commands:
 
 ```shell
 composer verify
-composer serve
 npm run cas:stub
+./scripts/e2e/serve-workbench.sh
 curl -i http://127.0.0.1:8001/login
 curl -i http://127.0.0.1:9800/cas/__health
 ```
@@ -397,6 +461,6 @@ username: casuser
 password: Mellon
 ```
 
-The Workbench dashboard exposes `departmentNumber`, `department_number`, and `organisation` so the attribute-mapping behavior is visible during development.
+The Workbench dashboard exposes `name`, `email`, `departmentNumber`, `department_number`, and `organisation` so user creation and attribute-mapping behavior are visible during development.
 
 The GitHub Actions workflow runs the same verification flow on pushes and pull requests, so local and CI coverage stay aligned.
